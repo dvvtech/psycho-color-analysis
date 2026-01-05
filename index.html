@@ -1,50 +1,911 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HTML5 Раскраска</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Раскраска</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .color-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .color-btn.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        
+        .tool-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .tool-btn:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .tool-btn.active {
+            background-color: #e5e7eb;
+        }
+        
+        .canvas-container {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(45deg, #f9fafb 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f9fafb 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f9fafb 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f9fafb 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        
+        .stat-bar {
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: width 0.8s ease;
+        }
+        
+        .rotate-90 {
+            transform: rotate(90deg);
+        }
+        
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        .rotate-270 {
+            transform: rotate(270deg);
+        }
+        
+        /* Стили для скроллбара */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        /* Стили для превью изображений */
+        .image-preview {
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Заголовок -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Цифровая раскраска</h1>
+            <p class="text-gray-600">Выберите изображение и раскрасьте его в выбранные цвета</p>
+        </header>
 
-<div class="app">
-  <aside class="toolbar">
-    <h2>Раскраска</h2>
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Левая панель - инструменты -->
+            <div class="lg:w-1/4">
+                <!-- Выбор изображения -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Выбор изображения</h2>
+                    <div class="grid grid-cols-2 gap-3" id="image-selector">
+                        <!-- Изображения будут добавлены динамически -->
+                    </div>
+                </div>
 
-    <label>
-      Выбор картинки
-      <select id="imageSelect"></select>
-    </label>
+                <!-- Инструменты рисования -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Инструменты</h2>
+                    
+                    <!-- Размер кисти -->
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-700">Размер кисти</span>
+                            <span id="brush-size-value" class="font-semibold">5px</span>
+                        </div>
+                        <input type="range" min="1" max="30" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" id="brush-size">
+                    </div>
+                    
+                    <!-- Кнопки поворота -->
+                    <div class="flex gap-3 mb-6">
+                        <button id="rotate-left" class="tool-btn flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 px-4 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-rotate-left mr-2"></i>
+                            <span>Влево</span>
+                        </button>
+                        <button id="rotate-right" class="tool-btn flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 px-4 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-rotate-right mr-2"></i>
+                            <span>Вправо</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Undo/Redo -->
+                    <div class="flex gap-3 mb-6">
+                        <button id="undo-btn" class="tool-btn flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 px-4 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-undo mr-2"></i>
+                            <span>Отменить</span>
+                        </button>
+                        <button id="redo-btn" class="tool-btn flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 px-4 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-redo mr-2"></i>
+                            <span>Повторить</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Кнопка расчета статистики -->
+                    <button id="calculate-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-chart-pie mr-2"></i>
+                        <span>Рассчитать статистику</span>
+                    </button>
+                </div>
 
-    <div class="palette">
-      <h3>Тёплые цвета</h3>
-      <div id="warmColors" class="colors"></div>
+                <!-- Выбор цвета -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Выбор цвета</h2>
+                    
+                    <!-- Теплые цвета -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-amber-700 mb-3">Теплые цвета</h3>
+                        <div class="grid grid-cols-5 gap-2" id="warm-colors-container">
+                            <!-- Теплые цвета будут добавлены динамически -->
+                        </div>
+                    </div>
+                    
+                    <!-- Холодные цвета -->
+                    <div>
+                        <h3 class="text-lg font-medium text-blue-700 mb-3">Холодные цвета</h3>
+                        <div class="grid grid-cols-5 gap-2" id="cool-colors-container">
+                            <!-- Холодные цвета будут добавлены динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      <h3>Холодные цвета</h3>
-      <div id="coldColors" class="colors"></div>
+            <!-- Основная область - холст -->
+            <div class="lg:w-2/4">
+                <div class="canvas-container rounded-xl overflow-hidden bg-white">
+                    <div class="p-4 flex justify-center items-center h-full">
+                        <canvas id="drawing-canvas" width="785" height="1080" class="max-w-full h-auto border border-gray-200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая панель - статистика -->
+            <div class="lg:w-1/4">
+                <div class="bg-white rounded-xl shadow-md p-6 sticky top-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Статистика цветов</h2>
+                    <div id="stats-container" class="mb-6">
+                        <p class="text-gray-500 text-center py-8">Нажмите "Рассчитать статистику" для отображения данных</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <h3 class="font-medium text-gray-700 mb-2">Инструкция:</h3>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>1. Выберите изображение для раскрашивания</li>
+                            <li>2. Выберите цвет и размер кисти</li>
+                            <li>3. Раскрашивайте изображение</li>
+                            <li>4. Используйте кнопки поворота при необходимости</li>
+                            <li>5. Нажмите "Рассчитать статистику" для анализа</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Футер -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Приложение-раскраска. Все изображения предназначены для некоммерческого использования.</p>
+        </footer>
     </div>
 
-    <label>
-      Размер кисти
-      <input type="range" id="brushSize" min="2" max="50" value="10">
-    </label>
+    <script>
+        // Данные приложения
+        const appConfig = {
+            canvasWidth: 785,
+            canvasHeight: 1080,
+            images: [
+                { id: 1, name: "Изображение 1", filename: "images/test1.png" },
+                { id: 2, name: "Изображение 2", filename: "images/test2.png" },
+                { id: 3, name: "Изображение 3", filename: "images/test3.png" },
+                { id: 4, name: "Изображение 4", filename: "images/test4.png" },
+                { id: 5, name: "Изображение 5", filename: "images/test5.png" }
+            ],
+            warmColors: [
+                { name: "Красный", hex: "#ef4444" },
+                { name: "Оранжевый", hex: "#f97316" },
+                { name: "Желтый", hex: "#eab308" },
+                { name: "Розовый", hex: "#ec4899" },
+                { name: "Коричневый", hex: "#92400e" }
+            ],
+            coolColors: [
+                { name: "Зеленый", hex: "#22c55e" },
+                { name: "Голубой", hex: "#0ea5e9" },
+                { name: "Синий", hex: "#3b82f6" },
+                { name: "Фиолетовый", hex: "#8b5cf6" },
+                { name: "Бирюзовый", hex: "#06b6d4" }
+            ]
+        };
 
-    <div class="buttons">
-      <button id="rotateLeft">⟲ Влево</button>
-      <button id="rotateRight">⟳ Вправо</button>
-    </div>
+        // Состояние приложения
+        let state = {
+            currentImage: null,
+            currentColor: "#ef4444",
+            brushSize: 5,
+            rotation: 0,
+            drawing: false,
+            lastX: 0,
+            lastY: 0,
+            undoStack: [],
+            redoStack: [],
+            colorUsage: {},
+            loadedImages: {} // Кэш загруженных изображений
+        };
 
-    <button id="calculate" class="primary">Рассчитать</button>
-  </aside>
+        // Инициализация DOM элементов
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        const imageSelector = document.getElementById('image-selector');
+        const warmColorsContainer = document.getElementById('warm-colors-container');
+        const coolColorsContainer = document.getElementById('cool-colors-container');
+        const brushSizeSlider = document.getElementById('brush-size');
+        const brushSizeValue = document.getElementById('brush-size-value');
+        const rotateLeftBtn = document.getElementById('rotate-left');
+        const rotateRightBtn = document.getElementById('rotate-right');
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        const calculateBtn = document.getElementById('calculate-btn');
+        const statsContainer = document.getElementById('stats-container');
 
-  <main class="canvas-wrapper">
-    <canvas id="canvas"></canvas>
-  </main>
-</div>
+        // Инициализация изображений для выбора
+        function initImageSelector() {
+            appConfig.images.forEach(image => {
+                const imgElement = document.createElement('div');
+                imgElement.className = 'border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-400 transition duration-200';
+                imgElement.innerHTML = `
+                    <div class="h-32 bg-gray-100 flex items-center justify-center image-preview" data-filename="${image.filename}">
+                        <div class="text-center">
+                            <i class="fas fa-image text-4xl text-gray-400 mb-2"></i>
+                            <p class="text-sm font-medium text-gray-700">${image.name}</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Пытаемся загрузить превью изображения
+                loadImagePreview(image.filename, imgElement.querySelector('.image-preview'));
+                
+                imgElement.addEventListener('click', () => loadImage(image));
+                imageSelector.appendChild(imgElement);
+            });
+            
+            // Загружаем первое изображение по умолчанию
+            if (appConfig.images.length > 0) {
+                loadImage(appConfig.images[0]);
+            }
+        }
 
-<div id="stats" class="stats"></div>
+        // Загрузка превью изображения
+        function loadImagePreview(filename, container) {
+            const img = new Image();
+            img.onload = function() {
+                container.style.backgroundImage = `url('${filename}')`;
+                container.innerHTML = '<p class="text-sm font-medium text-gray-700 bg-white/70 px-2 py-1 rounded">' + 
+                                      filename.split('/').pop() + '</p>';
+            };
+            img.onerror = function() {
+                // Если изображение не загрузилось, оставляем иконку
+                console.log(`Не удалось загрузить превью: ${filename}`);
+            };
+            img.src = filename;
+        }
 
-<script src="script.js"></script>
+        // Инициализация цветовых кнопок
+        function initColorButtons() {
+            // Теплые цвета
+            appConfig.warmColors.forEach((color, index) => {
+                const colorBtn = document.createElement('button');
+                colorBtn.className = 'color-btn w-10 h-10 rounded-full';
+                colorBtn.style.backgroundColor = color.hex;
+                colorBtn.title = color.name;
+                colorBtn.dataset.color = color.hex;
+                colorBtn.dataset.name = color.name;
+                
+                colorBtn.addEventListener('click', () => {
+                    // Убираем активный класс у всех кнопок цвета
+                    document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+                    // Добавляем активный класс текущей кнопке
+                    colorBtn.classList.add('active');
+                    // Устанавливаем текущий цвет
+                    state.currentColor = color.hex;
+                });
+                
+                warmColorsContainer.appendChild(colorBtn);
+                
+                // Активируем первый цвет по умолчанию
+                if (index === 0) {
+                    colorBtn.classList.add('active');
+                    state.currentColor = color.hex;
+                }
+            });
+            
+            // Холодные цвета
+            appConfig.coolColors.forEach(color => {
+                const colorBtn = document.createElement('button');
+                colorBtn.className = 'color-btn w-10 h-10 rounded-full';
+                colorBtn.style.backgroundColor = color.hex;
+                colorBtn.title = color.name;
+                colorBtn.dataset.color = color.hex;
+                colorBtn.dataset.name = color.name;
+                
+                colorBtn.addEventListener('click', () => {
+                    // Убираем активный класс у всех кнопок цвета
+                    document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+                    // Добавляем активный класс текущей кнопке
+                    colorBtn.classList.add('active');
+                    // Устанавливаем текущий цвет
+                    state.currentColor = color.hex;
+                });
+                
+                coolColorsContainer.appendChild(colorBtn);
+            });
+        }
+
+        // Загрузка изображения на холст
+        function loadImage(image) {
+            state.currentImage = image;
+            
+            // Показываем индикатор загрузки
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f9fafb';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#9ca3af';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Загрузка изображения...', canvas.width/2, canvas.height/2);
+            
+            // Проверяем, есть ли изображение в кэше
+            if (state.loadedImages[image.filename]) {
+                drawImageFromCache(image);
+            } else {
+                loadImageFromFile(image);
+            }
+        }
+
+        // Загрузка изображения из файла
+        function loadImageFromFile(image) {
+            const img = new Image();
+            img.crossOrigin = "anonymous"; // Для работы с локальными файлами
+            
+            img.onload = function() {
+                // Сохраняем в кэш
+                state.loadedImages[image.filename] = img;
+                
+                // Очищаем холст
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Сбрасываем поворот
+                state.rotation = 0;
+                canvas.className = 'max-w-full h-auto border border-gray-200';
+                
+                // Рисуем изображение
+                drawImageOnCanvas(img);
+                
+                // Сохраняем начальное состояние
+                saveState();
+                
+                // Обновляем историю
+                state.undoStack = [];
+                state.redoStack = [];
+                updateUndoRedoButtons();
+            };
+            
+            img.onerror = function() {
+                console.error(`Не удалось загрузить изображение: ${image.filename}`);
+                // Показываем placeholder
+                drawPlaceholderImage(image.name);
+                
+                // Сохраняем начальное состояние
+                saveState();
+                
+                // Обновляем историю
+                state.undoStack = [];
+                state.redoStack = [];
+                updateUndoRedoButtons();
+            };
+            
+            img.src = image.filename;
+        }
+
+        // Рисование изображения из кэша
+        function drawImageFromCache(image) {
+            const img = state.loadedImages[image.filename];
+            
+            // Очищаем холст
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Сбрасываем поворот
+            state.rotation = 0;
+            canvas.className = 'max-w-full h-auto border border-gray-200';
+            
+            // Рисуем изображение
+            drawImageOnCanvas(img);
+            
+            // Сохраняем начальное состояние
+            saveState();
+            
+            // Обновляем историю
+            state.undoStack = [];
+            state.redoStack = [];
+            updateUndoRedoButtons();
+        }
+
+        // Рисование изображения на холсте
+        function drawImageOnCanvas(img) {
+            // Очищаем холст белым цветом
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Вычисляем масштабирование для сохранения пропорций
+            const imgRatio = img.width / img.height;
+            const canvasRatio = canvas.width / canvas.height;
+            
+            let drawWidth, drawHeight, offsetX, offsetY;
+            
+            if (imgRatio > canvasRatio) {
+                // Изображение шире холста
+                drawWidth = canvas.width;
+                drawHeight = canvas.width / imgRatio;
+                offsetX = 0;
+                offsetY = (canvas.height - drawHeight) / 2;
+            } else {
+                // Изображение выше холста
+                drawHeight = canvas.height;
+                drawWidth = canvas.height * imgRatio;
+                offsetX = (canvas.width - drawWidth) / 2;
+                offsetY = 0;
+            }
+            
+            // Рисуем изображение по центру холста
+            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        }
+
+        // Рисование placeholder изображения (если реальное не загрузилось)
+        function drawPlaceholderImage(name) {
+            // Фон
+            ctx.fillStyle = '#f9fafb';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Текст
+            ctx.font = 'bold 40px Arial';
+            ctx.fillStyle = '#d1d5db';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(name, canvas.width/2, canvas.height/2 - 30);
+            
+            // Подпись
+            ctx.font = '20px Arial';
+            ctx.fillStyle = '#9ca3af';
+            ctx.fillText('Изображение не загружено', canvas.width/2, canvas.height/2 + 30);
+            
+            // Простой контур для примера
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 3;
+            
+            drawGenericOutline();
+        }
+
+        // Рисование общего контура
+        function drawGenericOutline() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.beginPath();
+            
+            // Большой круг
+            ctx.arc(centerX, centerY, 150, 0, Math.PI * 2);
+            
+            // Внутренние элементы
+            ctx.moveTo(centerX - 100, centerY - 100);
+            ctx.lineTo(centerX + 100, centerY + 100);
+            
+            ctx.moveTo(centerX + 100, centerY - 100);
+            ctx.lineTo(centerX - 100, centerY + 100);
+            
+            // Меньшие круги
+            ctx.moveTo(centerX + 180, centerY);
+            ctx.arc(centerX + 180, centerY, 30, 0, Math.PI * 2);
+            
+            ctx.moveTo(centerX - 180, centerY);
+            ctx.arc(centerX - 180, centerY, 30, 0, Math.PI * 2);
+            
+            ctx.stroke();
+        }
+
+        // Сохранение состояния холста
+        function saveState() {
+            state.undoStack.push(canvas.toDataURL());
+            // Ограничиваем размер стека отмены
+            if (state.undoStack.length > 20) {
+                state.undoStack.shift();
+            }
+            // Очищаем стек повтора при новом действии
+            state.redoStack = [];
+            updateUndoRedoButtons();
+        }
+
+        // Отмена действия
+        function undo() {
+            if (state.undoStack.length > 1) {
+                state.redoStack.push(state.undoStack.pop());
+                const prevState = state.undoStack[state.undoStack.length - 1];
+                restoreState(prevState);
+                updateUndoRedoButtons();
+            }
+        }
+
+        // Повтор действия
+        function redo() {
+            if (state.redoStack.length > 0) {
+                const nextState = state.redoStack.pop();
+                state.undoStack.push(nextState);
+                restoreState(nextState);
+                updateUndoRedoButtons();
+            }
+        }
+
+        // Восстановление состояния холста
+        function restoreState(dataURL) {
+            const img = new Image();
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = dataURL;
+        }
+
+        // Обновление состояния кнопок отмены/повтора
+        function updateUndoRedoButtons() {
+            undoBtn.disabled = state.undoStack.length <= 1;
+            redoBtn.disabled = state.redoStack.length === 0;
+            
+            undoBtn.classList.toggle('opacity-50', state.undoStack.length <= 1);
+            undoBtn.classList.toggle('cursor-not-allowed', state.undoStack.length <= 1);
+            redoBtn.classList.toggle('opacity-50', state.redoStack.length === 0);
+            redoBtn.classList.toggle('cursor-not-allowed', state.redoStack.length === 0);
+        }
+
+        // Поворот изображения
+        function rotateImage(direction) {
+            // Сохраняем текущее состояние
+            saveState();
+            
+            // Обновляем угол поворота
+            if (direction === 'left') {
+                state.rotation -= 90;
+            } else {
+                state.rotation += 90;
+            }
+            
+            // Нормализуем угол (0-360 градусов)
+            state.rotation = ((state.rotation % 360) + 360) % 360;
+            
+            // Применяем класс поворота к canvas
+            canvas.className = 'max-w-full h-auto border border-gray-200';
+            if (state.rotation === 90) {
+                canvas.classList.add('rotate-90');
+            } else if (state.rotation === 180) {
+                canvas.classList.add('rotate-180');
+            } else if (state.rotation === 270) {
+                canvas.classList.add('rotate-270');
+            }
+        }
+
+        // Расчет статистики цветов
+        function calculateStatistics() {
+            // Сбрасываем статистику
+            state.colorUsage = {};
+            
+            // Получаем данные изображения
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Счетчик всех пикселей (без учета фона)
+            let totalUserPixels = 0;
+            
+            // Перебираем все пиксели
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const a = data[i + 3];
+                
+                // Пропускаем прозрачные пиксели
+                if (a < 100) continue;
+                
+                // Проверяем, не является ли это цветом фона (белый)
+                if (r > 250 && g > 250 && b > 250) continue;
+                
+                // Конвертируем RGB в HEX
+                const hex = rgbToHex(r, g, b);
+                
+                // Находим название цвета по HEX
+                const colorName = findColorName(hex);
+                
+                if (colorName) {
+                    if (!state.colorUsage[colorName]) {
+                        state.colorUsage[colorName] = {
+                            count: 0,
+                            hex: hex
+                        };
+                    }
+                    state.colorUsage[colorName].count++;
+                    totalUserPixels++;
+                }
+            }
+            
+            // Рассчитываем проценты
+            for (const color in state.colorUsage) {
+                state.colorUsage[color].percentage = totalUserPixels > 0 
+                    ? Math.round((state.colorUsage[color].count / totalUserPixels) * 100) 
+                    : 0;
+            }
+            
+            // Отображаем статистику
+            displayStatistics(totalUserPixels);
+        }
+
+        // Конвертация RGB в HEX
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+
+        // Поиск названия цвета по HEX
+        function findColorName(hex) {
+            // Ищем среди теплых цветов
+            for (const color of appConfig.warmColors) {
+                if (color.hex.toLowerCase() === hex.toLowerCase()) {
+                    return color.name;
+                }
+            }
+            
+            // Ищем среди холодных цветов
+            for (const color of appConfig.coolColors) {
+                if (color.hex.toLowerCase() === hex.toLowerCase()) {
+                    return color.name;
+                }
+            }
+            
+            // Если цвет не найден среди наших, возвращаем null
+            return null;
+        }
+
+        // Отображение статистики
+        function displayStatistics(totalPixels) {
+            // Сортируем цвета по проценту использования
+            const sortedColors = Object.keys(state.colorUsage)
+                .map(color => ({
+                    name: color,
+                    ...state.colorUsage[color]
+                }))
+                .sort((a, b) => b.percentage - a.percentage)
+                .slice(0, 10); // Берем только первые 10 цветов
+            
+            // Если нет использованных цветов
+            if (sortedColors.length === 0) {
+                statsContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-palette text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Вы еще не использовали цвета для раскрашивания</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let statsHTML = `
+                <div class="mb-4">
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Всего раскрашено пикселей:</span>
+                        <span class="font-semibold">${totalPixels.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+            
+            sortedColors.forEach(color => {
+                const isWarm = appConfig.warmColors.some(c => c.name === color.name);
+                const colorType = isWarm ? 'Теплый' : 'Холодный';
+                
+                statsHTML += `
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-1">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 rounded-full mr-2 border border-gray-300" style="background-color: ${color.hex};"></div>
+                                <span class="font-medium text-gray-700">${color.name}</span>
+                                <span class="ml-2 text-xs px-2 py-1 rounded-full ${isWarm ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${colorType}</span>
+                            </div>
+                            <span class="font-semibold">${color.percentage}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="stat-bar h-2.5 rounded-full" style="width: ${color.percentage}%; background-color: ${color.hex};"></div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">${color.count.toLocaleString()} пикселей</div>
+                    </div>
+                `;
+            });
+            
+            // Добавляем визуализацию распределения цветов
+            statsHTML += `
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="font-medium text-gray-700 mb-3">Распределение цветов</h3>
+                    <div class="flex h-6 rounded-md overflow-hidden border border-gray-300">
+            `;
+            
+            sortedColors.forEach(color => {
+                statsHTML += `<div class="h-full" style="width: ${color.percentage}%; background-color: ${color.hex};" title="${color.name}: ${color.percentage}%"></div>`;
+            });
+            
+            statsHTML += `
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mt-2">
+                        <span>Теплые цвета</span>
+                        <span>Холодные цвета</span>
+                    </div>
+                </div>
+            `;
+            
+            statsContainer.innerHTML = statsHTML;
+        }
+
+        // Инициализация обработчиков событий
+        function initEventListeners() {
+            // События мыши на холсте
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            // События касания для мобильных устройств
+            canvas.addEventListener('touchstart', handleTouchStart);
+            canvas.addEventListener('touchmove', handleTouchMove);
+            canvas.addEventListener('touchend', stopDrawing);
+            
+            // Ползунок размера кисти
+            brushSizeSlider.addEventListener('input', function() {
+                state.brushSize = parseInt(this.value);
+                brushSizeValue.textContent = `${state.brushSize}px`;
+            });
+            
+            // Кнопки поворота
+            rotateLeftBtn.addEventListener('click', () => rotateImage('left'));
+            rotateRightBtn.addEventListener('click', () => rotateImage('right'));
+            
+            // Кнопки отмены/повтора
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+            
+            // Кнопка расчета статистики
+            calculateBtn.addEventListener('click', calculateStatistics);
+        }
+
+        // Функции для рисования
+        function startDrawing(e) {
+            state.drawing = true;
+            saveState();
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            if (e.type.includes('touch')) {
+                state.lastX = (e.touches[0].clientX - rect.left) * scaleX;
+                state.lastY = (e.touches[0].clientY - rect.top) * scaleY;
+            } else {
+                state.lastX = (e.clientX - rect.left) * scaleX;
+                state.lastY = (e.clientY - rect.top) * scaleY;
+            }
+            
+            // Рисуем точку в начале
+            ctx.beginPath();
+            ctx.arc(state.lastX, state.lastY, state.brushSize/2, 0, Math.PI * 2);
+            ctx.fillStyle = state.currentColor;
+            ctx.fill();
+        }
+
+        function draw(e) {
+            if (!state.drawing) return;
+            
+            e.preventDefault();
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            let x, y;
+            
+            if (e.type.includes('touch')) {
+                x = (e.touches[0].clientX - rect.left) * scaleX;
+                y = (e.touches[0].clientY - rect.top) * scaleY;
+            } else {
+                x = (e.clientX - rect.left) * scaleX;
+                y = (e.clientY - rect.top) * scaleY;
+            }
+            
+            // Рисуем
+            ctx.lineWidth = state.brushSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = state.currentColor;
+            
+            ctx.beginPath();
+            ctx.moveTo(state.lastX, state.lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            
+            // Обновляем последние координаты
+            state.lastX = x;
+            state.lastY = y;
+        }
+
+        function stopDrawing() {
+            state.drawing = false;
+            ctx.beginPath();
+        }
+
+        // Обработчики для сенсорных устройств
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+
+        // Инициализация приложения
+        function initApp() {
+            initImageSelector();
+            initColorButtons();
+            initEventListeners();
+            updateUndoRedoButtons();
+            
+            // Устанавливаем размер холста
+            canvas.width = appConfig.canvasWidth;
+            canvas.height = appConfig.canvasHeight;
+        }
+
+        // Запуск приложения
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
 </body>
 </html>
