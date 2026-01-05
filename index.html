@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTML5 Раскраска</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="app">
+  <aside class="toolbar">
+    <h2>Раскраска</h2>
+
+    <label>
+      Выбор картинки
+      <select id="imageSelect"></select>
+    </label>
+
+    <div class="palette">
+      <h3>Тёплые цвета</h3>
+      <div id="warmColors" class="colors"></div>
+
+      <h3>Холодные цвета</h3>
+      <div id="coldColors" class="colors"></div>
+    </div>
+
+    <label>
+      Размер кисти
+      <input type="range" id="brushSize" min="2" max="50" value="10">
+    </label>
+
+    <div class="buttons">
+      <button id="rotateLeft">⟲ Влево</button>
+      <button id="rotateRight">⟳ Вправо</button>
+    </div>
+
+    <button id="calculate" class="primary">Рассчитать</button>
+  </aside>
+
+  <main class="canvas-wrapper">
+    <canvas id="canvas"></canvas>
+  </main>
+</div>
+
+<div id="stats" class="stats"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
