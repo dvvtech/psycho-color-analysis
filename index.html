@@ -94,6 +94,29 @@
             background-repeat: no-repeat;
             background-position: center;
         }
+        
+        /* Индикатор выбранного изображения */
+        .image-item.selected {
+            border-color: #3b82f6;
+            border-width: 3px;
+        }
+        
+        .image-item.selected::after {
+            content: "✓";
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #3b82f6;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -280,25 +303,40 @@
         function initImageSelector() {
             appConfig.images.forEach(image => {
                 const imgElement = document.createElement('div');
-                imgElement.className = 'border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-400 transition duration-200';
+                imgElement.className = 'image-item border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-400 transition duration-200 relative';
+                imgElement.dataset.imageId = image.id;
                 imgElement.innerHTML = `
                     <div class="h-32 bg-gray-100 flex items-center justify-center image-preview" data-filename="${image.filename}">
-                        <div class="text-center">
-                            <i class="fas fa-image text-4xl text-gray-400 mb-2"></i>
-                            <p class="text-sm font-medium text-gray-700">${image.name}</p>
-                        </div>
+                        <!-- Будет заполнено фоновым изображением -->
                     </div>
                 `;
                 
                 // Пытаемся загрузить превью изображения
                 loadImagePreview(image.filename, imgElement.querySelector('.image-preview'));
                 
-                imgElement.addEventListener('click', () => loadImage(image));
+                imgElement.addEventListener('click', () => {
+                    // Убираем выделение со всех изображений
+                    document.querySelectorAll('.image-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    
+                    // Выделяем выбранное изображение
+                    imgElement.classList.add('selected');
+                    
+                    // Загружаем изображение
+                    loadImage(image);
+                });
+                
                 imageSelector.appendChild(imgElement);
             });
             
             // Загружаем первое изображение по умолчанию
             if (appConfig.images.length > 0) {
+                // Выделяем первое изображение
+                const firstImageElement = imageSelector.querySelector('.image-item');
+                if (firstImageElement) {
+                    firstImageElement.classList.add('selected');
+                }
                 loadImage(appConfig.images[0]);
             }
         }
@@ -308,12 +346,17 @@
             const img = new Image();
             img.onload = function() {
                 container.style.backgroundImage = `url('${filename}')`;
-                container.innerHTML = '<p class="text-sm font-medium text-gray-700 bg-white/70 px-2 py-1 rounded">' + 
-                                      filename.split('/').pop() + '</p>';
+                // Очищаем содержимое контейнера - больше никакого текста!
+                container.innerHTML = '';
             };
             img.onerror = function() {
-                // Если изображение не загрузилось, оставляем иконку
+                // Если изображение не загрузилось, показываем простую иконку (без текста)
                 console.log(`Не удалось загрузить превью: ${filename}`);
+                container.innerHTML = `
+                    <div class="text-center text-gray-400">
+                        <i class="fas fa-image text-4xl"></i>
+                    </div>
+                `;
             };
             img.src = filename;
         }
@@ -423,7 +466,7 @@
             img.onerror = function() {
                 console.error(`Не удалось загрузить изображение: ${image.filename}`);
                 // Показываем placeholder
-                drawPlaceholderImage(image.name);
+                drawPlaceholderImage();
                 
                 // Сохраняем начальное состояние
                 saveState();
@@ -491,7 +534,7 @@
         }
 
         // Рисование placeholder изображения (если реальное не загрузилось)
-        function drawPlaceholderImage(name) {
+        function drawPlaceholderImage() {
             // Фон
             ctx.fillStyle = '#f9fafb';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -501,12 +544,12 @@
             ctx.fillStyle = '#d1d5db';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(name, canvas.width/2, canvas.height/2 - 30);
+            ctx.fillText('Изображение', canvas.width/2, canvas.height/2 - 30);
             
             // Подпись
             ctx.font = '20px Arial';
             ctx.fillStyle = '#9ca3af';
-            ctx.fillText('Изображение не загружено', canvas.width/2, canvas.height/2 + 30);
+            ctx.fillText('Не удалось загрузить', canvas.width/2, canvas.height/2 + 30);
             
             // Простой контур для примера
             ctx.strokeStyle = '#e5e7eb';
