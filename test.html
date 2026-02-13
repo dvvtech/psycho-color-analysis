@@ -363,11 +363,6 @@
         
         <div class="error" id="error"></div>
         
-        <!-- Блок для предпросмотра JSON -->
-        <div class="json-preview" id="jsonPreview">
-            <pre>// Здесь будет отображаться отправляемый JSON</pre>
-        </div>
-        
         <div class="results" id="results">
             <div class="result-section">
                 <div class="result-title">Основная характеристика:</div>
@@ -548,23 +543,9 @@
             return apiRequest;
         }
         
-        // Отображение предпросмотра JSON
-        function updateJsonPreview() {
-            try {
-                const apiRequest = buildApiRequest();
-                const jsonString = JSON.stringify(apiRequest, null, 2);
-                document.getElementById('jsonPreview').innerHTML = `<pre>${jsonString}</pre>`;
-            } catch (e) {
-                document.getElementById('jsonPreview').innerHTML = '<pre>// Ошибка формирования JSON</pre>';
-            }
-        }
-        
         // Отправка запроса на сервер
         async function sendAnalysisRequest() {
             const apiRequest = buildApiRequest();
-            
-            // Обновляем предпросмотр JSON
-            updateJsonPreview();
             
             // Проверяем, что сумма равна 100
             if (total !== 100) {
@@ -713,23 +694,11 @@
             document.getElementById('calculateBtn').addEventListener('click', sendAnalysisRequest);
             document.getElementById('resetBtn').addEventListener('click', resetSliders);
             
-            // Добавляем обработчики для обновления предпросмотра JSON при изменении полей
-            document.getElementById('age').addEventListener('input', updateJsonPreview);
-            document.getElementById('gender').addEventListener('change', updateJsonPreview);
-            document.getElementById('zodiac').addEventListener('change', updateJsonPreview);
-            
-            // Добавляем обработчик для слайдеров для обновления предпросмотра
-            colors.forEach(color => {
-                const sliderId = `slider-${color.name}`;
-                document.getElementById(sliderId).addEventListener('input', updateJsonPreview);
-            });
-            
             // Устанавливаем начальные значения для демонстрации
             setTimeout(() => {
                 updateSliderValue("Красный", 40);
                 updateSliderValue("Синий", 35);
-                updateSliderValue("Зеленый", 25);
-                updateJsonPreview();
+                updateSliderValue("Зеленый", 25);                
             }, 100);
         });
     </script>
