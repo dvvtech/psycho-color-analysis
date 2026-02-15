@@ -554,23 +554,23 @@
             }
             
             // Проверяем, что есть хотя бы один выбранный цвет
-            if (apiRequest.user_data.colors.length === 0) {
+            if (apiRequest.user_color.colors.length === 0) {
                 showError("Выберите хотя бы один цвет с ненулевым значением.");
                 return;
             }
             
             // Проверяем заполнение полей пользователя
-            if (!apiRequest.user_data.age || apiRequest.user_data.age < 1 || apiRequest.user_data.age > 120) {
+            if (!apiRequest.user_color.age || apiRequest.user_color.age < 1 || apiRequest.user_color.age > 120) {
                 showError("Пожалуйста, укажите корректный возраст (от 1 до 120 лет).");
                 return;
             }
             
-            if (!apiRequest.user_data.gender) {
+            if (!apiRequest.user_color.gender) {
                 showError("Пожалуйста, выберите пол.");
                 return;
             }
             
-            if (!apiRequest.user_data.zodiac_sign) {
+            if (!apiRequest.user_color.zodiac_sign) {
                 showError("Пожалуйста, выберите знак зодиака.");
                 return;
             }
