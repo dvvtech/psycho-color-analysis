@@ -585,6 +585,7 @@
             hideError();
 
             try {
+                var test = JSON.stringify(apiRequest);
                 // В реальном приложении нужно раскомментировать этот код
                 // и заменить URL на актуальный
                 const response = await fetch('https://api.cloud-platform.pro/mpp-tests/v1/color-analysis/analyze-lusher', {
