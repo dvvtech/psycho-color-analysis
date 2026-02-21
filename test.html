@@ -382,7 +382,7 @@
     </div>
 
     <script>
-        // Массив цветов для анализа
+        // Массив цветов для анализа (ДОБАВЛЕНЫ ЧЕРНЫЙ И БЕЛЫЙ)
         const colors = [
             { name: "Красный", hex: "#e74c3c" },
             { name: "Оранжевый", hex: "#e67e22" },
@@ -393,7 +393,9 @@
             { name: "Голубой", hex: "#3498db" },
             { name: "Синий", hex: "#2980b9" },
             { name: "Фиолетовый", hex: "#9b59b6" },
-            { name: "Бирюзовый", hex: "#1abc9c" }
+            { name: "Бирюзовый", hex: "#1abc9c" },
+            { name: "Черный", hex: "#2c3e50" },
+            { name: "Белый", hex: "#ffffff" }
         ];
         
         // Инициализация слайдеров
@@ -409,7 +411,7 @@
                 const sliderHTML = `
                     <div class="color-slider">
                         <div class="color-header">
-                            <div class="color-box" style="background-color: ${color.hex}"></div>
+                            <div class="color-box" style="background-color: ${color.hex}; border: ${color.name === 'Белый' ? '1px solid #ddd' : 'none'}"></div>
                             <div class="color-name">${color.name}</div>
                         </div>
                         <div class="slider-container">
@@ -696,9 +698,12 @@
             
             // Устанавливаем начальные значения для демонстрации
             setTimeout(() => {
-                updateSliderValue("Красный", 40);
-                updateSliderValue("Синий", 35);
-                updateSliderValue("Зеленый", 25);                
+                updateSliderValue("Красный", 30);
+                updateSliderValue("Синий", 25);
+                updateSliderValue("Зеленый", 20);
+                updateSliderValue("Желтый", 15);
+                updateSliderValue("Черный", 5);
+                updateSliderValue("Белый", 5);
             }, 100);
         });
     </script>
