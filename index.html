@@ -1,3 +1,92 @@
-<html>
-    <body>hello</body>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Медико-педагого-психологические тесты Яшара Ибадова</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .image-item.selected {
+            border-color: #667eea;
+            border-width: 2px;
+            transform: scale(1.02);
+            transition: all 0.3s ease;
+        }
+        
+        .canvas-container {
+            transition: all 0.3s ease;
+        }
+        
+        .results-show .canvas-container {
+            width: 50%;
+            float: left;
+        }
+        
+        .results-show .results-panel {
+            width: 50%;
+            float: right;
+            display: block !important;
+        }
+        
+        .color-btn.active {
+            transform: scale(1.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-bar {
+            transition: width 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            transform: none;
+            cursor: not-allowed;
+        }
+        
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-7xl w-full glass-effect rounded-2xl shadow-2xl overflow-hidden">
+        <!-- Контейнер для динамической загрузки страниц -->
+        <div id="settings" class="page-container"></div>
+        <div id="coloring" class="page-container hidden"></div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
 </html>
