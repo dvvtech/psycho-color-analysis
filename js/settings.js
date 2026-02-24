@@ -24,6 +24,7 @@ App.loadSavedData = function() {
 };
 
 // Инициализация выбора изображений
+// Инициализация выбора изображений
 App.initImageSelector = function() {
     const imageSelector = document.getElementById('image-selector');
     if (!imageSelector) {
@@ -38,8 +39,11 @@ App.initImageSelector = function() {
         imgElement.className = 'image-item border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-400 transition duration-200 relative';
         imgElement.dataset.imageId = image.id;
         imgElement.innerHTML = `
-            <div class="h-32 bg-gray-100 flex items-center justify-center image-preview" data-filename="${image.filename}">
+            <div class="h-48 bg-gray-100 flex items-center justify-center image-preview" data-filename="${image.filename}">
                 <i class="fas fa-spinner fa-spin text-gray-400"></i>
+            </div>
+            <div class="p-2 text-center text-sm font-medium text-gray-700 border-t border-gray-200">
+                ${image.name}
             </div>
         `;
         
@@ -70,8 +74,9 @@ App.loadImagePreview = function(filename, container) {
     const img = new Image();
     img.onload = function() {
         container.style.backgroundImage = `url('${filename}')`;
-        container.style.backgroundSize = 'cover';
+        container.style.backgroundSize = 'contain';
         container.style.backgroundPosition = 'center';
+        container.style.backgroundRepeat = 'no-repeat';
         container.innerHTML = '';
     };
     img.onerror = function() {
