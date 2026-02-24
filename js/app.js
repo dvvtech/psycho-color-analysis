@@ -46,6 +46,7 @@ const App = {
         colorUsage: {}
     },
 
+    // Метод для загрузки компонентов
     async loadComponent(id, file) {
         try {
             const response = await fetch(file);
@@ -54,15 +55,20 @@ const App = {
             
             // Инициализация после загрузки компонента
             if (id === 'settings' && !document.getElementById('settings').classList.contains('hidden')) {
-                this.initSettingsPage();
+                if (typeof this.initSettingsPage === 'function') {
+                    this.initSettingsPage();
+                }
             } else if (id === 'coloring' && !document.getElementById('coloring').classList.contains('hidden')) {
-                this.initColoringPage();
+                if (typeof this.initColoringPage === 'function') {
+                    this.initColoringPage();
+                }
             }
         } catch (error) {
             console.error(`Ошибка загрузки ${file}:`, error);
         }
     },
 
+    // Метод для показа страницы
     showPage(pageId) {
         document.querySelectorAll('.page-container').forEach(el => {
             el.classList.add('hidden');
@@ -72,24 +78,37 @@ const App = {
         
         // Инициализация страницы
         if (pageId === 'settings') {
-            this.initSettingsPage();
+            if (typeof this.initSettingsPage === 'function') {
+                this.initSettingsPage();
+            }
         } else if (pageId === 'coloring') {
-            this.initColoringPage();
+            if (typeof this.initColoringPage === 'function') {
+                this.initColoringPage();
+            }
         }
     },
 
+    // Сохранение в localStorage
     saveToLocalStorage() {
         localStorage.setItem('userData', JSON.stringify(this.state.userData));
     },
 
+    // Загрузка из localStorage
     loadFromLocalStorage() {
         const saved = localStorage.getItem('userData');
         if (saved) {
-            this.state.userData = JSON.parse(saved);
+            try {
+                this.state.userData = JSON.parse(saved);
+            } catch (e) {
+                console.error('Ошибка загрузки из localStorage:', e);
+            }
         }
     },
 
+    // Определение знака зодиака
     getZodiacSign(dateStr) {
+        if (!dateStr) return "Неизвестно";
+        
         const date = new Date(dateStr);
         const day = date.getDate();
         const month = date.getMonth() + 1;
@@ -113,7 +132,14 @@ const App = {
 
 // Загрузка компонентов при старте
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM загружен, начинаем загрузку компонентов...');
+    
+    // Сначала загружаем HTML компоненты
     await App.loadComponent('settings', 'settings.html');
     await App.loadComponent('coloring', 'coloring.html');
+    
+    // Загружаем данные из localStorage
     App.loadFromLocalStorage();
+    
+    console.log('Компоненты загружены');
 });

@@ -1,27 +1,38 @@
 // Инициализация страницы раскраски
 App.initColoringPage = function() {
-    this.canvas = document.getElementById('testCanvas');
+    console.log('Инициализация страницы раскраски');
+    
+    // Проверяем наличие canvas
+    const canvas = document.getElementById('testCanvas');
+    if (!canvas) {
+        console.error('Canvas не найден');
+        return;
+    }
+    
+    this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d');
+    
     this.setupCanvas();
     this.initColorPalette();
     this.setupDrawingTools();
     this.loadSelectedImage();
-    this.setupEventListeners();
+    this.setupColoringEventListeners();
+    
     this.state.undoStack = [];
     this.state.redoStack = [];
     this.updateUndoRedoButtons();
 };
 
+// Настройка canvas
 App.setupCanvas = function() {
-    // Устанавливаем размеры canvas
     this.canvas.width = this.config.canvasWidth;
     this.canvas.height = this.config.canvasHeight;
     
-    // Настройка рисования
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
 };
 
+// Инициализация палитры цветов
 App.initColorPalette = function() {
     const palette = document.getElementById('colorPalette');
     if (!palette) return;
@@ -45,6 +56,7 @@ App.initColorPalette = function() {
     });
 };
 
+// Настройка инструментов рисования
 App.setupDrawingTools = function() {
     const brushSize = document.getElementById('brushSize');
     const brushSizeValue = document.getElementById('brushSizeValue');
@@ -68,6 +80,7 @@ App.setupDrawingTools = function() {
     this.canvas.addEventListener('touchend', this.stopDrawing.bind(this));
 };
 
+// Начало рисования
 App.startDrawing = function(e) {
     e.preventDefault();
     this.state.isDrawing = true;
@@ -76,6 +89,7 @@ App.startDrawing = function(e) {
     this.state.lastY = pos.y;
 };
 
+// Рисование
 App.draw = function(e) {
     e.preventDefault();
     if (!this.state.isDrawing) return;
@@ -95,6 +109,7 @@ App.draw = function(e) {
     this.state.lastY = y;
 };
 
+// Остановка рисования
 App.stopDrawing = function() {
     if (this.state.isDrawing) {
         this.state.isDrawing = false;
@@ -102,6 +117,7 @@ App.stopDrawing = function() {
     }
 };
 
+// Получение координат на canvas
 App.getCanvasCoordinates = function(e) {
     const rect = this.canvas.getBoundingClientRect();
     const scaleX = this.canvas.width / rect.width;
@@ -123,12 +139,16 @@ App.getCanvasCoordinates = function(e) {
     return { x, y };
 };
 
+// Загрузка выбранного изображения
 App.loadSelectedImage = function() {
     if (this.state.userData.selectedTest) {
         this.loadImageFromFile(this.state.userData.selectedTest);
+    } else {
+        this.drawPlaceholderImage();
     }
 };
 
+// Загрузка изображения из файла
 App.loadImageFromFile = function(image) {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -145,6 +165,7 @@ App.loadImageFromFile = function(image) {
     };
     
     img.onerror = () => {
+        console.error(`Не удалось загрузить изображение: ${image.filename}`);
         this.drawPlaceholderImage();
         this.saveState();
         this.state.undoStack = [];
@@ -155,6 +176,7 @@ App.loadImageFromFile = function(image) {
     img.src = image.filename;
 };
 
+// Рисование изображения на canvas
 App.drawImageOnCanvas = function(img) {
     this.ctx.fillStyle = '#ffffff';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -179,6 +201,7 @@ App.drawImageOnCanvas = function(img) {
     this.ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 };
 
+// Рисование заглушки
 App.drawPlaceholderImage = function() {
     this.ctx.fillStyle = '#f9fafb';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -194,6 +217,7 @@ App.drawPlaceholderImage = function() {
     this.ctx.fillText('Не удалось загрузить', this.canvas.width/2, this.canvas.height/2 + 30);
 };
 
+// Сохранение состояния
 App.saveState = function() {
     this.state.undoStack.push(this.canvas.toDataURL());
     if (this.state.undoStack.length > 20) {
@@ -203,6 +227,7 @@ App.saveState = function() {
     this.updateUndoRedoButtons();
 };
 
+// Отмена
 App.undo = function() {
     if (this.state.undoStack.length > 1) {
         this.state.redoStack.push(this.state.undoStack.pop());
@@ -212,6 +237,7 @@ App.undo = function() {
     }
 };
 
+// Повтор
 App.redo = function() {
     if (this.state.redoStack.length > 0) {
         const nextState = this.state.redoStack.pop();
@@ -221,6 +247,7 @@ App.redo = function() {
     }
 };
 
+// Восстановление состояния
 App.restoreState = function(dataURL) {
     const img = new Image();
     img.onload = () => {
@@ -230,6 +257,7 @@ App.restoreState = function(dataURL) {
     img.src = dataURL;
 };
 
+// Обновление кнопок Undo/Redo
 App.updateUndoRedoButtons = function() {
     const undoBtn = document.getElementById('undoBtn');
     const redoBtn = document.getElementById('redoBtn');
@@ -245,6 +273,7 @@ App.updateUndoRedoButtons = function() {
     }
 };
 
+// Расчет статистики
 App.calculateStatistics = function() {
     this.state.colorUsage = {};
     
@@ -286,10 +315,12 @@ App.calculateStatistics = function() {
     return totalUserPixels;
 };
 
+// Конвертация RGB в HEX
 App.rgbToHex = function(r, g, b) {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 };
 
+// Поиск названия цвета
 App.findColorName = function(hex) {
     for (const color of this.config.colors) {
         if (color.hex.toLowerCase() === hex.toLowerCase()) {
@@ -299,6 +330,7 @@ App.findColorName = function(hex) {
     return null;
 };
 
+// Отображение статистики
 App.displayStatistics = function(totalPixels) {
     const statsContainer = document.getElementById('statsContainer');
     if (!statsContainer) return;
@@ -366,6 +398,7 @@ App.displayStatistics = function(totalPixels) {
     statsContainer.innerHTML = statsHTML;
 };
 
+// Построение запроса к API
 App.buildApiRequest = function() {
     const colorsData = [];
     
@@ -394,6 +427,7 @@ App.buildApiRequest = function() {
     };
 };
 
+// Отправка запроса на анализ
 App.sendAnalysisRequest = async function() {
     const apiRequest = this.buildApiRequest();
     
@@ -441,6 +475,7 @@ App.sendAnalysisRequest = async function() {
     }
 };
 
+// Отображение результатов
 App.displayResults = function(result) {
     const resultsElement = document.getElementById('results');
     const mainCharacteristicElement = document.getElementById('mainCharacteristic');
@@ -448,59 +483,86 @@ App.displayResults = function(result) {
     const recommendationsListElement = document.getElementById('recommendationsList');
     const strengthsSection = document.getElementById('strengthsSection');
     
-    mainCharacteristicElement.textContent = result.main_characteristic || "Не указано";
-    
-    strengthsListElement.innerHTML = '';
-    if (result.strengths && result.strengths.length > 0) {
-        result.strengths.forEach(strength => {
-            const li = document.createElement('li');
-            li.textContent = strength;
-            strengthsListElement.appendChild(li);
-        });
-        strengthsSection.style.display = 'block';
-    } else {
-        strengthsSection.style.display = 'none';
+    if (mainCharacteristicElement) {
+        mainCharacteristicElement.textContent = result.main_characteristic || "Не указано";
     }
     
-    recommendationsListElement.innerHTML = '';
-    if (result.recommendations && result.recommendations.length > 0) {
-        result.recommendations.forEach(recommendation => {
-            const li = document.createElement('li');
-            li.textContent = recommendation;
-            recommendationsListElement.appendChild(li);
-        });
+    if (strengthsListElement) {
+        strengthsListElement.innerHTML = '';
+        if (result.strengths && result.strengths.length > 0) {
+            result.strengths.forEach(strength => {
+                const li = document.createElement('li');
+                li.textContent = strength;
+                strengthsListElement.appendChild(li);
+            });
+            if (strengthsSection) strengthsSection.style.display = 'block';
+        } else {
+            if (strengthsSection) strengthsSection.style.display = 'none';
+        }
     }
     
-    resultsElement.style.display = 'block';
+    if (recommendationsListElement) {
+        recommendationsListElement.innerHTML = '';
+        if (result.recommendations && result.recommendations.length > 0) {
+            result.recommendations.forEach(recommendation => {
+                const li = document.createElement('li');
+                li.textContent = recommendation;
+                recommendationsListElement.appendChild(li);
+            });
+        }
+    }
+    
+    if (resultsElement) {
+        resultsElement.style.display = 'block';
+    }
     
     // Уменьшаем холст и показываем результаты справа
-    document.querySelector('.canvas-container').classList.add('w-1/2', 'float-left');
-    document.querySelector('.results-panel').classList.remove('hidden');
+    const canvasContainer = document.querySelector('.canvas-container');
+    const resultsPanel = document.querySelector('.results-panel');
+    
+    if (canvasContainer) {
+        canvasContainer.classList.add('w-1/2', 'float-left');
+    }
+    if (resultsPanel) {
+        resultsPanel.classList.remove('hidden');
+    }
 };
 
+// Показать загрузку
 App.showLoading = function() {
-    document.getElementById('loading').style.display = 'block';
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'block';
 };
 
+// Скрыть загрузку
 App.hideLoading = function() {
-    document.getElementById('loading').style.display = 'none';
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'none';
 };
 
+// Показать ошибку
 App.showError = function(message) {
     const errorElement = document.getElementById('error');
-    errorElement.textContent = message;
-    errorElement.style.display = 'block';
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
 };
 
+// Скрыть ошибку
 App.hideError = function() {
-    document.getElementById('error').style.display = 'none';
+    const errorElement = document.getElementById('error');
+    if (errorElement) errorElement.style.display = 'none';
 };
 
+// Скрыть результаты
 App.hideResults = function() {
-    document.getElementById('results').style.display = 'none';
+    const resultsElement = document.getElementById('results');
+    if (resultsElement) resultsElement.style.display = 'none';
 };
 
-App.setupEventListeners = function() {
+// Настройка обработчиков событий
+App.setupColoringEventListeners = function() {
     // Кнопка Главная
     const homeBtn = document.getElementById('homeBtn');
     if (homeBtn) {
@@ -570,11 +632,13 @@ App.setupEventListeners = function() {
     }
 };
 
+// Поворот canvas
 App.rotateCanvas = function() {
     // Здесь можно реализовать поворот canvas
     console.log('Поворот:', this.state.rotation);
 };
 
+// Масштабирование canvas
 App.applyZoom = function() {
     // Здесь можно реализовать масштабирование canvas
     console.log('Масштаб:', this.state.scale);

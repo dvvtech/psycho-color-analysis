@@ -1,12 +1,35 @@
 // Инициализация страницы настроек
 App.initSettingsPage = function() {
+    console.log('Инициализация страницы настроек');
     this.initImageSelector();
-    this.setupEventListeners();
+    this.setupSettingsEventListeners();
+    this.loadSavedData();
 };
 
+// Загрузка сохраненных данных в форму
+App.loadSavedData = function() {
+    const genderMale = document.querySelector('input[value="male"]');
+    const genderFemale = document.querySelector('input[value="female"]');
+    const birthDateInput = document.getElementById('birthDate');
+    
+    if (this.state.userData.gender === 'male' && genderMale) {
+        genderMale.checked = true;
+    } else if (this.state.userData.gender === 'female' && genderFemale) {
+        genderFemale.checked = true;
+    }
+    
+    if (this.state.userData.birthDate && birthDateInput) {
+        birthDateInput.value = this.state.userData.birthDate;
+    }
+};
+
+// Инициализация выбора изображений
 App.initImageSelector = function() {
     const imageSelector = document.getElementById('image-selector');
-    if (!imageSelector) return;
+    if (!imageSelector) {
+        console.error('image-selector не найден');
+        return;
+    }
 
     imageSelector.innerHTML = '';
     
@@ -15,7 +38,9 @@ App.initImageSelector = function() {
         imgElement.className = 'image-item border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-400 transition duration-200 relative';
         imgElement.dataset.imageId = image.id;
         imgElement.innerHTML = `
-            <div class="h-32 bg-gray-100 flex items-center justify-center image-preview" data-filename="${image.filename}"></div>
+            <div class="h-32 bg-gray-100 flex items-center justify-center image-preview" data-filename="${image.filename}">
+                <i class="fas fa-spinner fa-spin text-gray-400"></i>
+            </div>
         `;
         
         this.loadImagePreview(image.filename, imgElement.querySelector('.image-preview'));
@@ -40,6 +65,7 @@ App.initImageSelector = function() {
     }
 };
 
+// Загрузка превью изображения
 App.loadImagePreview = function(filename, container) {
     const img = new Image();
     img.onload = function() {
@@ -58,12 +84,17 @@ App.loadImagePreview = function(filename, container) {
     img.src = filename;
 };
 
-App.setupEventListeners = function() {
+// Настройка обработчиков событий
+App.setupSettingsEventListeners = function() {
     const nextBtn = document.getElementById('nextBtn');
     if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
+        // Удаляем старый обработчик, если есть
+        nextBtn.removeEventListener('click', this.nextBtnHandler);
+        // Добавляем новый
+        this.nextBtnHandler = () => {
             // Собираем данные
-            const gender = document.querySelector('input[name="gender"]:checked')?.value;
+            const genderElement = document.querySelector('input[name="gender"]:checked');
+            const gender = genderElement?.value;
             const birthDate = document.getElementById('birthDate')?.value;
             
             // Валидация
@@ -89,21 +120,7 @@ App.setupEventListeners = function() {
             
             // Переходим на страницу раскраски
             this.showPage('coloring');
-        });
-    }
-    
-    // Загружаем сохраненные данные
-    const genderMale = document.querySelector('input[value="male"]');
-    const genderFemale = document.querySelector('input[value="female"]');
-    const birthDateInput = document.getElementById('birthDate');
-    
-    if (this.state.userData.gender === 'male' && genderMale) {
-        genderMale.checked = true;
-    } else if (this.state.userData.gender === 'female' && genderFemale) {
-        genderFemale.checked = true;
-    }
-    
-    if (this.state.userData.birthDate && birthDateInput) {
-        birthDateInput.value = this.state.userData.birthDate;
+        };
+        nextBtn.addEventListener('click', this.nextBtnHandler.bind(this));
     }
 };
