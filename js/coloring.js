@@ -353,14 +353,7 @@ App.displayStatistics = function(totalPixels) {
         return;
     }
     
-    let statsHTML = `
-        <div class="mb-4">
-            <div class="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Всего раскрашено пикселей:</span>
-                <span class="font-semibold">${totalPixels.toLocaleString()}</span>
-            </div>
-        </div>
-    `;
+    let statsHTML = '';
     
     sortedColors.forEach(color => {
         statsHTML += `
