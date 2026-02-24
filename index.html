@@ -50,8 +50,51 @@
             background-color: #f0f5ff;
         }
 
+        /* Фиксированная высота для контейнера с canvas */
         .canvas-container {
-            transition: all 0.3s ease;
+            max-width: 785px;
+            max-height: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Стили для canvas */
+        #testCanvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 800px;
+            object-fit: contain;
+        }
+
+        /* Адаптация для мобильных устройств */
+        @media (max-height: 900px) {
+            .canvas-container {
+                max-height: 700px;
+            }
+
+            #testCanvas {
+                max-height: 700px;
+            }
+        }
+
+        @media (max-height: 800px) {
+            .canvas-container {
+                max-height: 600px;
+            }
+
+            #testCanvas {
+                max-height: 600px;
+            }
+        }
+
+        /* Стили для основного контента */
+        .flex-1 {
+            overflow-y: auto;
+            max-height: calc(100vh - 80px);
+            /* 80px - высота верхней панели */
         }
 
         .results-show .canvas-container {

@@ -2,7 +2,7 @@
 const App = {
     config: {
         canvasWidth: 785,
-        canvasHeight: 1080,
+        canvasHeight: 800,
         images: [
             { id: 1, name: "Тест 1", filename: "images/test1.png" },
             { id: 2, name: "Тест 2", filename: "images/test2.png" },

@@ -25,11 +25,24 @@ App.initColoringPage = function() {
 
 // Настройка canvas
 App.setupCanvas = function() {
+    // Устанавливаем размеры canvas
     this.canvas.width = this.config.canvasWidth;
     this.canvas.height = this.config.canvasHeight;
     
+    // Настройка рисования
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
+    
+    // Добавляем обработчик для изменения размера окна
+    window.addEventListener('resize', this.handleResize.bind(this));
+};
+
+// Обработчик изменения размера окна
+App.handleResize = function() {
+    // Перерисовываем текущее изображение при изменении размера окна
+    if (this.state.userData.selectedTest && this.state.loadedImages[this.state.userData.selectedTest.filename]) {
+        this.drawImageOnCanvas(this.state.loadedImages[this.state.userData.selectedTest.filename]);
+    }
 };
 
 // Инициализация палитры цветов
@@ -181,24 +194,21 @@ App.drawImageOnCanvas = function(img) {
     this.ctx.fillStyle = '#ffffff';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     
-    const imgRatio = img.width / img.height;
-    const canvasRatio = this.canvas.width / this.canvas.height;
-    
-    let drawWidth, drawHeight, offsetX, offsetY;
-    
-    if (imgRatio > canvasRatio) {
-        drawWidth = this.canvas.width;
-        drawHeight = this.canvas.width / imgRatio;
-        offsetX = 0;
-        offsetY = (this.canvas.height - drawHeight) / 2;
-    } else {
-        drawHeight = this.canvas.height;
-        drawWidth = this.canvas.height * imgRatio;
-        offsetX = (this.canvas.width - drawWidth) / 2;
-        offsetY = 0;
-    }
+    // Вычисляем масштабирование для заполнения canvas по высоте
+    const scale = this.canvas.height / img.height;
+    const drawWidth = img.width * scale;
+    const drawHeight = this.canvas.height;
+    const offsetX = (this.canvas.width - drawWidth) / 2;
+    const offsetY = 0;
     
     this.ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+    
+    // Если изображение слишком узкое, заполняем фон по бокам белым
+    if (offsetX > 0) {
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillRect(0, 0, offsetX, this.canvas.height);
+        this.ctx.fillRect(offsetX + drawWidth, 0, this.canvas.width - (offsetX + drawWidth), this.canvas.height);
+    }
 };
 
 // Рисование заглушки
@@ -512,12 +522,17 @@ App.displayResults = function(result) {
     // Уменьшаем холст и показываем результаты справа
     const canvasContainer = document.querySelector('.canvas-container');
     const resultsPanel = document.querySelector('.results-panel');
+    const mainContainer = document.querySelector('.relative.h-full');
     
-    if (canvasContainer) {
-        canvasContainer.classList.add('w-1/2', 'float-left');
-    }
-    if (resultsPanel) {
+    if (canvasContainer && resultsPanel) {
+        canvasContainer.classList.remove('mx-auto');
+        canvasContainer.classList.add('w-1/2');
         resultsPanel.classList.remove('hidden');
+        
+        // Обновляем размер canvas
+        if (this.state.userData.selectedTest && this.state.loadedImages[this.state.userData.selectedTest.filename]) {
+            this.drawImageOnCanvas(this.state.loadedImages[this.state.userData.selectedTest.filename]);
+        }
     }
 };
 
