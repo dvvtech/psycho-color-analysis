@@ -67,27 +67,61 @@ App.handleResize = function () {
 };
 
 // Инициализация палитры цветов
-App.initColorPalette = function () {
+App.initColorPalette = function() {
     const palette = document.getElementById('colorPalette');
     if (!palette) return;
-
+    
     palette.innerHTML = '';
-    this.config.colors.forEach(color => {
-        const btn = document.createElement('button');
-        btn.className = `w-8 h-8 rounded-full border-2 transition-all ${this.state.currentColor === color.hex ? 'border-blue-500 scale-110' : 'border-gray-300'}`;
-        btn.style.backgroundColor = color.hex;
-        btn.title = color.name;
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#colorPalette button').forEach(b => {
-                b.classList.remove('border-blue-500', 'scale-110');
-                b.classList.add('border-gray-300');
-            });
-            btn.classList.remove('border-gray-300');
-            btn.classList.add('border-blue-500', 'scale-110');
-            this.state.currentColor = color.hex;
-        });
-        palette.appendChild(btn);
+    
+    // Разделяем цвета на два ряда
+    const firstRow = this.config.colors.slice(0, 6);
+    const secondRow = this.config.colors.slice(6, 12);
+    
+    // Создаем контейнер для первого ряда
+    const firstRowContainer = document.createElement('div');
+    firstRowContainer.className = 'flex flex-wrap gap-2 mb-2';
+    
+    // Создаем контейнер для второго ряда
+    const secondRowContainer = document.createElement('div');
+    secondRowContainer.className = 'flex flex-wrap gap-2';
+    
+    // Добавляем цвета в первый ряд
+    firstRow.forEach(color => {
+        const btn = this.createColorButton(color);
+        firstRowContainer.appendChild(btn);
     });
+    
+    // Добавляем цвета во второй ряд
+    secondRow.forEach(color => {
+        const btn = this.createColorButton(color);
+        secondRowContainer.appendChild(btn);
+    });
+    
+    // Добавляем ряды в палитру
+    palette.appendChild(firstRowContainer);
+    palette.appendChild(secondRowContainer);
+};
+
+// Вспомогательная функция для создания кнопки цвета
+App.createColorButton = function(color) {
+    const btn = document.createElement('button');
+    btn.className = `w-8 h-8 rounded-full border-2 transition-all ${this.state.currentColor === color.hex ? 'border-blue-500 scale-110' : 'border-gray-300'}`;
+    btn.style.backgroundColor = color.hex;
+    btn.title = color.name;
+    
+    btn.addEventListener('click', () => {
+        // Обновляем все кнопки в обоих рядах
+        document.querySelectorAll('#colorPalette button').forEach(b => {
+            b.classList.remove('border-blue-500', 'scale-110');
+            b.classList.add('border-gray-300');
+        });
+        
+        btn.classList.remove('border-gray-300');
+        btn.classList.add('border-blue-500', 'scale-110');
+        this.state.currentColor = color.hex;
+    });
+    
+    return btn;
 };
 
 // Настройка инструментов рисования
