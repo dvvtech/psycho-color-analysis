@@ -167,3 +167,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     console.log('Компоненты загружены');
 });
+
+// Обработчик для обновления данных при возврате на страницу
+window.addEventListener('pageshow', (event) => {
+    // Проверяем, что страница загружена из кеша (при навигации назад/вперед)
+    if (event.persisted) {
+        console.log('Страница загружена из кеша, обновляем данные');
+        
+        // Загружаем актуальные данные из localStorage
+        App.loadFromLocalStorage();
+        
+        // Если текущая страница - settings, обновляем форму
+        if (!document.getElementById('settings').classList.contains('hidden')) {
+            if (typeof App.initSettingsPage === 'function') {
+                App.initSettingsPage();
+            }
+        }
+    }
+});
