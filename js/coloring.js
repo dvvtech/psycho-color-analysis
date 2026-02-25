@@ -207,50 +207,46 @@ App.getCanvasCoordinates = function (e) {
         clientY = e.clientY;
     }
 
-    // Вычисляем координаты относительно центра canvas
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    // Получаем координаты относительно левого верхнего угла canvas (без поворота)
+    let x = (clientX - rect.left) * (this.canvas.width / rect.width);
+    let y = (clientY - rect.top) * (this.canvas.height / rect.height);
     
-    // Координаты относительно центра
-    let relX = clientX - centerX;
-    let relY = clientY - centerY;
-    
-    // Применяем обратный поворот в зависимости от текущего угла
-    let rotatedRelX, rotatedRelY;
+    // Применяем обратное преобразование в зависимости от угла поворота
+    let rotatedX, rotatedY;
     
     switch (this.state.rotation) {
         case 90:
-            // Поворот на 90° по часовой стрелке
-            rotatedRelX = -relY;
-            rotatedRelY = relX;
+            // При повороте на 90° по часовой стрелке:
+            // Исходные координаты (x, y) после поворота становятся (height - y, x)
+            // Значит, для обратного преобразования: (x, y) -> (y, width - x)
+            rotatedX = y;
+            rotatedY = this.canvas.width - x;
             break;
+            
         case 180:
-            // Поворот на 180°
-            rotatedRelX = -relX;
-            rotatedRelY = -relY;
+            // При повороте на 180°:
+            // (x, y) -> (width - x, height - y)
+            rotatedX = this.canvas.width - x;
+            rotatedY = this.canvas.height - y;
             break;
+            
         case 270:
-            // Поворот на 270° по часовой стрелке (или 90° против)
-            rotatedRelX = relY;
-            rotatedRelY = -relX;
+            // При повороте на 270° по часовой стрелке (или 90° против):
+            // (x, y) -> (height - y, width - x) с дополнительным преобразованием
+            rotatedX = this.canvas.height - y;
+            rotatedY = x;
             break;
+            
         default: // 0 градусов
-            rotatedRelX = relX;
-            rotatedRelY = relY;
+            rotatedX = x;
+            rotatedY = y;
     }
     
-    // Преобразуем обратно в координаты canvas
-    const canvasX = rotatedRelX + this.canvas.width / 2;
-    const canvasY = rotatedRelY + this.canvas.height / 2;
+    // Проверяем, что координаты в пределах canvas
+    rotatedX = Math.max(0, Math.min(this.canvas.width, rotatedX));
+    rotatedY = Math.max(0, Math.min(this.canvas.height, rotatedY));
     
-    // Масштабируем координаты с учетом размеров canvas
-    const scaleX = this.canvas.width / rect.width;
-    const scaleY = this.canvas.height / rect.height;
-    
-    const x = Math.max(0, Math.min(this.canvas.width, canvasX * scaleX));
-    const y = Math.max(0, Math.min(this.canvas.height, canvasY * scaleY));
-    
-    return { x, y };
+    return { x: rotatedX, y: rotatedY };
 };
 
 // Загрузка выбранного изображения
