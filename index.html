@@ -205,6 +205,35 @@
             grid-template-columns: repeat(6, minmax(0, 1fr));
             gap: 0.5rem;
         }
+        
+
+        /* Стили для поворота canvas */
+        .rotate-90 {
+            transform: rotate(90deg);
+            transform-origin: center center;
+        }
+
+        .rotate-180 {
+            transform: rotate(180deg);
+            transform-origin: center center;
+        }
+
+        .rotate-270 {
+            transform: rotate(270deg);
+            transform-origin: center center;
+        }
+
+        /* Для правильного отображения при повороте */
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #testCanvas {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 

@@ -228,6 +228,10 @@ App.loadImageFromFile = function (image) {
         this.state.loadedImages[image.filename] = img;
         this.state.rotation = 0;
         this.state.scale = 1;
+        
+        // Сбрасываем классы поворота
+        this.canvas.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
+        
         this.drawImageOnCanvas(img);
         this.saveState();
         this.state.undoStack = [];
@@ -812,8 +816,12 @@ App.resetColoringUI = function () {
 App.clearColoring = function () {
     console.log('Очистка раскраски');
 
-    // Подтверждение действия (опционально)
+    // Подтверждение действия
     if (confirm('Очистить раскраску? Все изменения будут потеряны.')) {
+
+        // Сбрасываем поворот
+        this.state.rotation = 0;
+        this.canvas.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
 
         // Перезагружаем исходное изображение без раскраски
         if (this.state.userData.selectedTest) {
@@ -838,39 +846,29 @@ App.clearColoring = function () {
     }
 };
 
-// Поворот canvas с сохранением раскраски (оптимизированная версия)
+// Более простой подход - хранить массив нарисованных точек
 App.rotateCanvas = function () {
     console.log('Поворот на:', this.state.rotation, 'градусов');
-
-    // Создаем временный canvas для поворота
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-
-    // Устанавливаем размеры временного canvas (равные основному)
-    tempCanvas.width = this.canvas.width;
-    tempCanvas.height = this.canvas.height;
-
-    // Очищаем временный canvas
-    tempCtx.fillStyle = '#ffffff';
-    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-    // Поворачиваем контекст
-    tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
-    tempCtx.rotate(this.state.rotation * Math.PI / 180);
-
-    // Рисуем текущее содержимое основного canvas на временном с поворотом
-    tempCtx.drawImage(this.canvas, -this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
-
-    // Очищаем основной canvas
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Рисуем повернутое изображение обратно на основной canvas
-    this.ctx.drawImage(tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
-
-    // Сохраняем состояние после поворота
+    
+    // Сохраняем текущее состояние перед поворотом
     this.saveState();
-
-    console.log('Поворот завершен, раскраска сохранена');
+    
+    // Применяем класс поворота к canvas
+    this.canvas.className = 'border border-gray-200 rounded-lg shadow-lg w-full h-auto';
+    
+    // Удаляем все классы поворота
+    this.canvas.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
+    
+    // Добавляем соответствующий класс в зависимости от угла
+    if (this.state.rotation === 90) {
+        this.canvas.classList.add('rotate-90');
+    } else if (this.state.rotation === 180) {
+        this.canvas.classList.add('rotate-180');
+    } else if (this.state.rotation === 270) {
+        this.canvas.classList.add('rotate-270');
+    }
+    
+    console.log('Поворот завершен, класс применен:', this.state.rotation);
 };
 
 // Масштабирование canvas
