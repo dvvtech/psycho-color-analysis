@@ -1,6 +1,10 @@
 // Инициализация страницы настроек
 App.initSettingsPage = function() {
     console.log('Инициализация страницы настроек');
+    
+    // Сначала загружаем актуальные данные из localStorage
+    this.loadFromLocalStorage();
+    
     this.initImageSelector();
     this.setupSettingsEventListeners();
     this.loadSavedData();
@@ -8,18 +12,44 @@ App.initSettingsPage = function() {
 
 // Загрузка сохраненных данных в форму
 App.loadSavedData = function() {
+    console.log('Загрузка сохраненных данных:', this.state.userData);
+    
     const genderMale = document.querySelector('input[value="male"]');
     const genderFemale = document.querySelector('input[value="female"]');
     const birthDateInput = document.getElementById('birthDate');
     
+    // Устанавливаем пол
     if (this.state.userData.gender === 'male' && genderMale) {
         genderMale.checked = true;
+        console.log('Установлен пол: мужской');
     } else if (this.state.userData.gender === 'female' && genderFemale) {
         genderFemale.checked = true;
+        console.log('Установлен пол: женский');
     }
     
+    // Устанавливаем дату рождения
     if (this.state.userData.birthDate && birthDateInput) {
         birthDateInput.value = this.state.userData.birthDate;
+        console.log('Установлена дата рождения:', this.state.userData.birthDate);
+    }
+    
+    // Выделяем сохраненный тест
+    if (this.state.userData.selectedTest) {
+        console.log('Выделяем сохраненный тест:', this.state.userData.selectedTest);
+        
+        // Убираем выделение со всех изображений
+        document.querySelectorAll('.image-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Выделяем сохраненное изображение
+        const savedImage = document.querySelector(`[data-image-id="${this.state.userData.selectedTest.id}"]`);
+        if (savedImage) {
+            savedImage.classList.add('selected');
+            console.log('Тест выделен');
+        } else {
+            console.log('Сохраненный тест не найден в DOM');
+        }
     }
 };
 

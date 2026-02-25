@@ -52,7 +52,7 @@ const App = {
             const response = await fetch(file);
             const content = await response.text();
             document.getElementById(id).innerHTML = content;
-            
+
             // Инициализация после загрузки компонента
             if (id === 'settings' && !document.getElementById('settings').classList.contains('hidden')) {
                 if (typeof this.initSettingsPage === 'function') {
@@ -75,7 +75,7 @@ const App = {
         });
         document.getElementById(pageId).classList.remove('hidden');
         this.state.currentPage = pageId;
-        
+
         // Инициализация страницы
         if (pageId === 'settings') {
             if (typeof this.initSettingsPage === 'function') {
@@ -90,7 +90,12 @@ const App = {
 
     // Сохранение в localStorage
     saveToLocalStorage() {
-        localStorage.setItem('userData', JSON.stringify(this.state.userData));
+        try {
+            localStorage.setItem('userData', JSON.stringify(this.state.userData));
+            console.log('Данные сохранены в localStorage:', this.state.userData);
+        } catch (e) {
+            console.error('Ошибка сохранения в localStorage:', e);
+        }
     },
 
     // Загрузка из localStorage
@@ -108,7 +113,7 @@ const App = {
     // Определение знака зодиака
     getZodiacSign(dateStr) {
         if (!dateStr) return "Неизвестно";
-        
+
         const date = new Date(dateStr);
         const day = date.getDate();
         const month = date.getMonth() + 1;
@@ -125,7 +130,7 @@ const App = {
         if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "Козерог";
         if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "Водолей";
         if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) return "Рыбы";
-        
+
         return "Неизвестно";
     }
 };
@@ -133,13 +138,20 @@ const App = {
 // Загрузка компонентов при старте
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM загружен, начинаем загрузку компонентов...');
-    
+
     // Сначала загружаем HTML компоненты
     await App.loadComponent('settings', 'settings.html');
     await App.loadComponent('coloring', 'coloring.html');
-    
+
     // Загружаем данные из localStorage
     App.loadFromLocalStorage();
-    
+
+    // Если текущая страница - settings, инициализируем её с загруженными данными
+    if (!document.getElementById('settings').classList.contains('hidden')) {
+        if (typeof App.initSettingsPage === 'function') {
+            App.initSettingsPage();
+        }
+    }
+
     console.log('Компоненты загружены');
 });
