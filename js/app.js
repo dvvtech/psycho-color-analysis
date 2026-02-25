@@ -101,12 +101,24 @@ const App = {
     // Загрузка из localStorage
     loadFromLocalStorage() {
         const saved = localStorage.getItem('userData');
+        console.log('Загружаем из localStorage:', saved);
+
         if (saved) {
             try {
-                this.state.userData = JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                // Проверяем, что это объект и объединяем с текущим состоянием
+                if (parsed && typeof parsed === 'object') {
+                    this.state.userData = {
+                        ...this.state.userData,
+                        ...parsed
+                    };
+                    console.log('Данные загружены из localStorage:', this.state.userData);
+                }
             } catch (e) {
                 console.error('Ошибка загрузки из localStorage:', e);
             }
+        } else {
+            console.log('В localStorage нет сохраненных данных');
         }
     },
 
