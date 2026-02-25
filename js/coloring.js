@@ -155,6 +155,14 @@ App.startDrawing = function (e) {
     const pos = this.getCanvasCoordinates(e);
     this.state.lastX = pos.x;
     this.state.lastY = pos.y;
+    
+    // Для создания точки при клике (без движения)
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = this.state.currentColor;
+    this.ctx.lineWidth = this.state.brushSize;
+    this.ctx.arc(pos.x, pos.y, this.state.brushSize / 2, 0, Math.PI * 2);
+    this.ctx.fillStyle = this.state.currentColor;
+    this.ctx.fill();
 };
 
 // Рисование
@@ -185,12 +193,10 @@ App.stopDrawing = function () {
     }
 };
 
-// Получение координат на canvas
+// Получение координат на canvas с учетом поворота
 App.getCanvasCoordinates = function (e) {
     const rect = this.canvas.getBoundingClientRect();
-    const scaleX = this.canvas.width / rect.width;
-    const scaleY = this.canvas.height / rect.height;
-
+    
     let clientX, clientY;
 
     if (e.touches) {
@@ -201,9 +207,49 @@ App.getCanvasCoordinates = function (e) {
         clientY = e.clientY;
     }
 
-    const x = (clientX - rect.left) * scaleX;
-    const y = (clientY - rect.top) * scaleY;
-
+    // Вычисляем координаты относительно центра canvas
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Координаты относительно центра
+    let relX = clientX - centerX;
+    let relY = clientY - centerY;
+    
+    // Применяем обратный поворот в зависимости от текущего угла
+    let rotatedRelX, rotatedRelY;
+    
+    switch (this.state.rotation) {
+        case 90:
+            // Поворот на 90° по часовой стрелке
+            rotatedRelX = -relY;
+            rotatedRelY = relX;
+            break;
+        case 180:
+            // Поворот на 180°
+            rotatedRelX = -relX;
+            rotatedRelY = -relY;
+            break;
+        case 270:
+            // Поворот на 270° по часовой стрелке (или 90° против)
+            rotatedRelX = relY;
+            rotatedRelY = -relX;
+            break;
+        default: // 0 градусов
+            rotatedRelX = relX;
+            rotatedRelY = relY;
+    }
+    
+    // Преобразуем обратно в координаты canvas
+    const canvasX = rotatedRelX + this.canvas.width / 2;
+    const canvasY = rotatedRelY + this.canvas.height / 2;
+    
+    // Масштабируем координаты с учетом размеров canvas
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    
+    const x = Math.max(0, Math.min(this.canvas.width, canvasX * scaleX));
+    const y = Math.max(0, Math.min(this.canvas.height, canvasY * scaleY));
+    
     return { x, y };
 };
 
@@ -846,7 +892,7 @@ App.clearColoring = function () {
     }
 };
 
-// Более простой подход - хранить массив нарисованных точек
+// Поворот canvas с использованием CSS классов
 App.rotateCanvas = function () {
     console.log('Поворот на:', this.state.rotation, 'градусов');
     
@@ -867,6 +913,10 @@ App.rotateCanvas = function () {
     } else if (this.state.rotation === 270) {
         this.canvas.classList.add('rotate-270');
     }
+    
+    // Обновляем отображение угла
+    const rotationAngle = document.getElementById('rotationAngle');
+    if (rotationAngle) rotationAngle.textContent = this.state.rotation + '°';
     
     console.log('Поворот завершен, класс применен:', this.state.rotation);
 };
