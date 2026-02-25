@@ -1,44 +1,44 @@
 // Инициализация страницы раскраски
-App.initColoringPage = function() {
+App.initColoringPage = function () {
     console.log('Инициализация страницы раскраски');
-    
+
     // Проверяем наличие canvas
     const canvas = document.getElementById('testCanvas');
     if (!canvas) {
         console.error('Canvas не найден');
         return;
     }
-    
+
     this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d');
-    
+
     this.setupCanvas();
     this.initColorPalette();
     this.setupDrawingTools();
     this.loadSelectedImage();
     this.setupColoringEventListeners();
-    
+
     this.state.undoStack = [];
     this.state.redoStack = [];
     this.updateUndoRedoButtons();
 };
 
 // Настройка canvas
-App.setupCanvas = function() {
+App.setupCanvas = function () {
     // Устанавливаем размеры canvas
     this.canvas.width = this.config.canvasWidth;
     this.canvas.height = this.config.canvasHeight;
-    
+
     // Настройка рисования
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
-    
+
     // Добавляем обработчик для изменения размера окна
     window.addEventListener('resize', this.handleResize.bind(this));
 };
 
 // Обработчик изменения размера окна
-App.handleResize = function() {
+App.handleResize = function () {
     // Перерисовываем текущее изображение при изменении размера окна
     if (this.state.userData.selectedTest && this.state.loadedImages[this.state.userData.selectedTest.filename]) {
         this.drawImageOnCanvas(this.state.loadedImages[this.state.userData.selectedTest.filename]);
@@ -46,10 +46,10 @@ App.handleResize = function() {
 };
 
 // Инициализация палитры цветов
-App.initColorPalette = function() {
+App.initColorPalette = function () {
     const palette = document.getElementById('colorPalette');
     if (!palette) return;
-    
+
     palette.innerHTML = '';
     this.config.colors.forEach(color => {
         const btn = document.createElement('button');
@@ -70,23 +70,23 @@ App.initColorPalette = function() {
 };
 
 // Настройка инструментов рисования
-App.setupDrawingTools = function() {
+App.setupDrawingTools = function () {
     const brushSize = document.getElementById('brushSize');
     const brushSizeValue = document.getElementById('brushSizeValue');
-    
+
     if (brushSize && brushSizeValue) {
         brushSize.addEventListener('input', (e) => {
             this.state.brushSize = parseInt(e.target.value);
             brushSizeValue.textContent = `${this.state.brushSize}px`;
         });
     }
-    
+
     // События рисования
     this.canvas.addEventListener('mousedown', this.startDrawing.bind(this));
     this.canvas.addEventListener('mousemove', this.draw.bind(this));
     this.canvas.addEventListener('mouseup', this.stopDrawing.bind(this));
     this.canvas.addEventListener('mouseleave', this.stopDrawing.bind(this));
-    
+
     // Для touch устройств
     this.canvas.addEventListener('touchstart', this.startDrawing.bind(this));
     this.canvas.addEventListener('touchmove', this.draw.bind(this));
@@ -94,7 +94,7 @@ App.setupDrawingTools = function() {
 };
 
 // Начало рисования
-App.startDrawing = function(e) {
+App.startDrawing = function (e) {
     e.preventDefault();
     this.state.isDrawing = true;
     const pos = this.getCanvasCoordinates(e);
@@ -103,27 +103,27 @@ App.startDrawing = function(e) {
 };
 
 // Рисование
-App.draw = function(e) {
+App.draw = function (e) {
     e.preventDefault();
     if (!this.state.isDrawing) return;
-    
+
     const pos = this.getCanvasCoordinates(e);
     const x = pos.x;
     const y = pos.y;
-    
+
     this.ctx.beginPath();
     this.ctx.strokeStyle = this.state.currentColor;
     this.ctx.lineWidth = this.state.brushSize;
     this.ctx.moveTo(this.state.lastX, this.state.lastY);
     this.ctx.lineTo(x, y);
     this.ctx.stroke();
-    
+
     this.state.lastX = x;
     this.state.lastY = y;
 };
 
 // Остановка рисования
-App.stopDrawing = function() {
+App.stopDrawing = function () {
     if (this.state.isDrawing) {
         this.state.isDrawing = false;
         this.saveState();
@@ -131,13 +131,13 @@ App.stopDrawing = function() {
 };
 
 // Получение координат на canvas
-App.getCanvasCoordinates = function(e) {
+App.getCanvasCoordinates = function (e) {
     const rect = this.canvas.getBoundingClientRect();
     const scaleX = this.canvas.width / rect.width;
     const scaleY = this.canvas.height / rect.height;
-    
+
     let clientX, clientY;
-    
+
     if (e.touches) {
         clientX = e.touches[0].clientX;
         clientY = e.touches[0].clientY;
@@ -145,15 +145,15 @@ App.getCanvasCoordinates = function(e) {
         clientX = e.clientX;
         clientY = e.clientY;
     }
-    
+
     const x = (clientX - rect.left) * scaleX;
     const y = (clientY - rect.top) * scaleY;
-    
+
     return { x, y };
 };
 
 // Загрузка выбранного изображения
-App.loadSelectedImage = function() {
+App.loadSelectedImage = function () {
     if (this.state.userData.selectedTest) {
         this.loadImageFromFile(this.state.userData.selectedTest);
     } else {
@@ -162,10 +162,10 @@ App.loadSelectedImage = function() {
 };
 
 // Загрузка изображения из файла
-App.loadImageFromFile = function(image) {
+App.loadImageFromFile = function (image) {
     const img = new Image();
     img.crossOrigin = "anonymous";
-    
+
     img.onload = () => {
         this.state.loadedImages[image.filename] = img;
         this.state.rotation = 0;
@@ -176,7 +176,7 @@ App.loadImageFromFile = function(image) {
         this.state.redoStack = [];
         this.updateUndoRedoButtons();
     };
-    
+
     img.onerror = () => {
         console.error(`Не удалось загрузить изображение: ${image.filename}`);
         this.drawPlaceholderImage();
@@ -185,24 +185,24 @@ App.loadImageFromFile = function(image) {
         this.state.redoStack = [];
         this.updateUndoRedoButtons();
     };
-    
+
     img.src = image.filename;
 };
 
 // Рисование изображения на canvas
-App.drawImageOnCanvas = function(img) {
+App.drawImageOnCanvas = function (img) {
     this.ctx.fillStyle = '#ffffff';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
+
     // Вычисляем масштабирование для заполнения canvas по высоте
     const scale = this.canvas.height / img.height;
     const drawWidth = img.width * scale;
     const drawHeight = this.canvas.height;
     const offsetX = (this.canvas.width - drawWidth) / 2;
     const offsetY = 0;
-    
+
     this.ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-    
+
     // Если изображение слишком узкое, заполняем фон по бокам белым
     if (offsetX > 0) {
         this.ctx.fillStyle = '#ffffff';
@@ -212,23 +212,23 @@ App.drawImageOnCanvas = function(img) {
 };
 
 // Рисование заглушки
-App.drawPlaceholderImage = function() {
+App.drawPlaceholderImage = function () {
     this.ctx.fillStyle = '#f9fafb';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
+
     this.ctx.font = 'bold 40px Arial';
     this.ctx.fillStyle = '#d1d5db';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('Изображение', this.canvas.width/2, this.canvas.height/2 - 30);
-    
+    this.ctx.fillText('Изображение', this.canvas.width / 2, this.canvas.height / 2 - 30);
+
     this.ctx.font = '20px Arial';
     this.ctx.fillStyle = '#9ca3af';
-    this.ctx.fillText('Не удалось загрузить', this.canvas.width/2, this.canvas.height/2 + 30);
+    this.ctx.fillText('Не удалось загрузить', this.canvas.width / 2, this.canvas.height / 2 + 30);
 };
 
 // Сохранение состояния
-App.saveState = function() {
+App.saveState = function () {
     this.state.undoStack.push(this.canvas.toDataURL());
     if (this.state.undoStack.length > 20) {
         this.state.undoStack.shift();
@@ -238,7 +238,7 @@ App.saveState = function() {
 };
 
 // Отмена
-App.undo = function() {
+App.undo = function () {
     if (this.state.undoStack.length > 1) {
         this.state.redoStack.push(this.state.undoStack.pop());
         const prevState = this.state.undoStack[this.state.undoStack.length - 1];
@@ -248,7 +248,7 @@ App.undo = function() {
 };
 
 // Повтор
-App.redo = function() {
+App.redo = function () {
     if (this.state.redoStack.length > 0) {
         const nextState = this.state.redoStack.pop();
         this.state.undoStack.push(nextState);
@@ -258,7 +258,7 @@ App.redo = function() {
 };
 
 // Восстановление состояния
-App.restoreState = function(dataURL) {
+App.restoreState = function (dataURL) {
     const img = new Image();
     img.onload = () => {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -268,14 +268,14 @@ App.restoreState = function(dataURL) {
 };
 
 // Обновление кнопок Undo/Redo
-App.updateUndoRedoButtons = function() {
+App.updateUndoRedoButtons = function () {
     const undoBtn = document.getElementById('undoBtn');
     const redoBtn = document.getElementById('redoBtn');
-    
+
     if (undoBtn && redoBtn) {
         undoBtn.disabled = this.state.undoStack.length <= 1;
         redoBtn.disabled = this.state.redoStack.length === 0;
-        
+
         undoBtn.classList.toggle('opacity-50', this.state.undoStack.length <= 1);
         undoBtn.classList.toggle('cursor-not-allowed', this.state.undoStack.length <= 1);
         redoBtn.classList.toggle('opacity-50', this.state.redoStack.length === 0);
@@ -284,25 +284,25 @@ App.updateUndoRedoButtons = function() {
 };
 
 // Расчет статистики
-App.calculateStatistics = function() {
+App.calculateStatistics = function () {
     this.state.colorUsage = {};
-    
+
     const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
     const data = imageData.data;
     let totalUserPixels = 0;
-    
+
     for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
         const g = data[i + 1];
         const b = data[i + 2];
         const a = data[i + 3];
-        
+
         if (a < 100) continue;
         if (r > 250 && g > 250 && b > 250) continue;
-        
+
         const hex = this.rgbToHex(r, g, b);
         const colorName = this.findColorName(hex);
-        
+
         if (colorName) {
             if (!this.state.colorUsage[colorName]) {
                 this.state.colorUsage[colorName] = {
@@ -314,24 +314,24 @@ App.calculateStatistics = function() {
             totalUserPixels++;
         }
     }
-    
+
     for (const color in this.state.colorUsage) {
-        this.state.colorUsage[color].percentage = totalUserPixels > 0 
-            ? Math.round((this.state.colorUsage[color].count / totalUserPixels) * 100) 
+        this.state.colorUsage[color].percentage = totalUserPixels > 0
+            ? Math.round((this.state.colorUsage[color].count / totalUserPixels) * 100)
             : 0;
     }
-    
+
     this.displayStatistics(totalUserPixels);
     return totalUserPixels;
 };
 
 // Конвертация RGB в HEX
-App.rgbToHex = function(r, g, b) {
+App.rgbToHex = function (r, g, b) {
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 };
 
 // Поиск названия цвета
-App.findColorName = function(hex) {
+App.findColorName = function (hex) {
     for (const color of this.config.colors) {
         if (color.hex.toLowerCase() === hex.toLowerCase()) {
             return color.name;
@@ -341,10 +341,10 @@ App.findColorName = function(hex) {
 };
 
 // Отображение статистики
-App.displayStatistics = function(totalPixels) {
+App.displayStatistics = function (totalPixels) {
     const statsContainer = document.getElementById('statsContainer');
     if (!statsContainer) return;
-    
+
     const sortedColors = Object.keys(this.state.colorUsage)
         .map(color => ({
             name: color,
@@ -352,7 +352,7 @@ App.displayStatistics = function(totalPixels) {
         }))
         .sort((a, b) => b.percentage - a.percentage)
         .slice(0, 10);
-    
+
     if (sortedColors.length === 0) {
         statsContainer.innerHTML = `
             <div class="text-center py-8">
@@ -362,9 +362,9 @@ App.displayStatistics = function(totalPixels) {
         `;
         return;
     }
-    
+
     let statsHTML = '';
-    
+
     sortedColors.forEach(color => {
         statsHTML += `
             <div class="mb-4">
@@ -382,29 +382,29 @@ App.displayStatistics = function(totalPixels) {
             </div>
         `;
     });
-    
+
     statsHTML += `
         <div class="mt-8 pt-6 border-t border-gray-200">
             <h3 class="font-medium text-gray-700 mb-3">Распределение цветов</h3>
             <div class="flex h-6 rounded-md overflow-hidden border border-gray-300">
     `;
-    
+
     sortedColors.forEach(color => {
         statsHTML += `<div class="h-full" style="width: ${color.percentage}%; background-color: ${color.hex};" title="${color.name}: ${color.percentage}%"></div>`;
     });
-    
+
     statsHTML += `
             </div>
         </div>
     `;
-    
+
     statsContainer.innerHTML = statsHTML;
 };
 
 // Построение запроса к API
-App.buildApiRequest = function() {
+App.buildApiRequest = function () {
     const colorsData = [];
-    
+
     for (const [colorName, data] of Object.entries(this.state.colorUsage)) {
         if (data.percentage > 0) {
             colorsData.push({
@@ -413,12 +413,12 @@ App.buildApiRequest = function() {
             });
         }
     }
-    
+
     const birthDate = this.state.userData.birthDate;
     const age = birthDate ? Math.floor((new Date() - new Date(birthDate)) / (365.25 * 24 * 60 * 60 * 1000)) : 0;
     const gender = this.state.userData.gender === 'male' ? 'М' : 'Ж';
     const zodiacSign = this.getZodiacSign(birthDate);
-    
+
     return {
         user_color: {
             colors: colorsData,
@@ -431,18 +431,21 @@ App.buildApiRequest = function() {
 };
 
 // Отправка запроса на анализ
-App.sendAnalysisRequest = async function() {
+App.sendAnalysisRequest = async function () {
+    // Сначала вычисляем статистику на текущем состоянии canvas
+    this.calculateStatistics();
+
     const apiRequest = this.buildApiRequest();
-    
+
     if (apiRequest.user_color.colors.length === 0) {
         this.showError("Выберите хотя бы один цвет с ненулевым значением.");
         return;
     }
-    
+
     this.showLoading();
     this.hideResults();
     this.hideError();
-    
+
     try {
         const response = await fetch('https://api.cloud-platform.pro/mpp-tests/v1/color-analysis/analyze-lusher-test', {
             method: 'POST',
@@ -451,17 +454,17 @@ App.sendAnalysisRequest = async function() {
             },
             body: JSON.stringify(apiRequest)
         });
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const result = await response.json();
         this.displayResults(result);
-        
+
     } catch (error) {
         console.error('Ошибка при отправке запроса:', error);
-        
+
         const exampleResult = {
             main_characteristic: "Ограниченность восприятия",
             strengths: ["Аналитическое мышление", "Внимательность к деталям"],
@@ -470,7 +473,7 @@ App.sendAnalysisRequest = async function() {
                 "Исследуйте свои эмоциональные реакции на разные цвета"
             ]
         };
-        
+
         this.displayResults(exampleResult);
         this.showError("Внимание: запрос не был отправлен на реальный сервер. Показан примерный результат для демонстрации.");
     } finally {
@@ -479,17 +482,17 @@ App.sendAnalysisRequest = async function() {
 };
 
 // Отображение результатов
-App.displayResults = function(result) {
+App.displayResults = function (result) {
     const resultsElement = document.getElementById('results');
     const mainCharacteristicElement = document.getElementById('mainCharacteristic');
     const strengthsListElement = document.getElementById('strengthsList');
     const recommendationsListElement = document.getElementById('recommendationsList');
     const strengthsSection = document.getElementById('strengthsSection');
-    
+
     if (mainCharacteristicElement) {
         mainCharacteristicElement.textContent = result.main_characteristic || "Не указано";
     }
-    
+
     if (strengthsListElement) {
         strengthsListElement.innerHTML = '';
         if (result.strengths && result.strengths.length > 0) {
@@ -503,7 +506,7 @@ App.displayResults = function(result) {
             if (strengthsSection) strengthsSection.style.display = 'none';
         }
     }
-    
+
     if (recommendationsListElement) {
         recommendationsListElement.innerHTML = '';
         if (result.recommendations && result.recommendations.length > 0) {
@@ -514,42 +517,46 @@ App.displayResults = function(result) {
             });
         }
     }
-    
+
     if (resultsElement) {
         resultsElement.style.display = 'block';
     }
-    
-    // Уменьшаем холст и показываем результаты справа
+
+    // Изменяем размеры контейнеров, НО НЕ ПЕРЕРИСОВЫВАЕМ изображение
     const canvasContainer = document.querySelector('.canvas-container');
     const resultsPanel = document.querySelector('.results-panel');
     const mainContainer = document.querySelector('.relative.h-full');
-    
+
     if (canvasContainer && resultsPanel) {
+        // Сохраняем текущее состояние canvas в data URL перед изменением размеров
+        const currentCanvasState = this.canvas.toDataURL();
+
         canvasContainer.classList.remove('mx-auto');
         canvasContainer.classList.add('w-1/2');
         resultsPanel.classList.remove('hidden');
-        
-        // Обновляем размер canvas
-        if (this.state.userData.selectedTest && this.state.loadedImages[this.state.userData.selectedTest.filename]) {
-            this.drawImageOnCanvas(this.state.loadedImages[this.state.userData.selectedTest.filename]);
-        }
+
+        // Восстанавливаем состояние canvas после изменения размеров контейнера
+        // Но только если это необходимо (если изменение размеров повлияло на canvas)
+        setTimeout(() => {
+            this.restoreState(currentCanvasState);
+        }, 10);
     }
 };
 
 // Показать загрузку
-App.showLoading = function() {
+App.showLoading = function () {
     const loading = document.getElementById('loading');
     if (loading) loading.style.display = 'block';
 };
 
 // Скрыть загрузку
-App.hideLoading = function() {
+App.hideLoading = function () {
     const loading = document.getElementById('loading');
     if (loading) loading.style.display = 'none';
 };
 
 // Показать ошибку
-App.showError = function(message) {
+App.showError = function (message) {
     const errorElement = document.getElementById('error');
     if (errorElement) {
         errorElement.textContent = message;
@@ -558,19 +565,19 @@ App.showError = function(message) {
 };
 
 // Скрыть ошибку
-App.hideError = function() {
+App.hideError = function () {
     const errorElement = document.getElementById('error');
     if (errorElement) errorElement.style.display = 'none';
 };
 
 // Скрыть результаты
-App.hideResults = function() {
+App.hideResults = function () {
     const resultsElement = document.getElementById('results');
     if (resultsElement) resultsElement.style.display = 'none';
 };
 
 // Настройка обработчиков событий
-App.setupColoringEventListeners = function() {
+App.setupColoringEventListeners = function () {
     // Кнопка Главная
     const homeBtn = document.getElementById('homeBtn');
     if (homeBtn) {
@@ -578,30 +585,30 @@ App.setupColoringEventListeners = function() {
             this.showPage('settings');
         });
     }
-    
+
     // Поворот
     const rotateLeft = document.getElementById('rotateLeft');
     const rotateRight = document.getElementById('rotateRight');
-    
+
     if (rotateLeft) {
         rotateLeft.addEventListener('click', () => {
             this.state.rotation = (this.state.rotation - 90) % 360;
             this.rotateCanvas();
         });
     }
-    
+
     if (rotateRight) {
         rotateRight.addEventListener('click', () => {
             this.state.rotation = (this.state.rotation + 90) % 360;
             this.rotateCanvas();
         });
     }
-    
+
     // Масштабирование
     const zoomIn = document.getElementById('zoomIn');
     const zoomOut = document.getElementById('zoomOut');
     const zoomLevel = document.getElementById('zoomLevel');
-    
+
     if (zoomIn) {
         zoomIn.addEventListener('click', () => {
             this.state.scale = Math.min(this.state.scale + 0.1, 2);
@@ -609,7 +616,7 @@ App.setupColoringEventListeners = function() {
             if (zoomLevel) zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
         });
     }
-    
+
     if (zoomOut) {
         zoomOut.addEventListener('click', () => {
             this.state.scale = Math.max(this.state.scale - 0.1, 0.5);
@@ -617,37 +624,42 @@ App.setupColoringEventListeners = function() {
             if (zoomLevel) zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
         });
     }
-    
+
     // Undo/Redo
     const undoBtn = document.getElementById('undoBtn');
     const redoBtn = document.getElementById('redoBtn');
-    
+
     if (undoBtn) {
         undoBtn.addEventListener('click', this.undo.bind(this));
     }
-    
+
     if (redoBtn) {
         redoBtn.addEventListener('click', this.redo.bind(this));
     }
-    
+
     // Рассчитать
     const calculateBtn = document.getElementById('calculateBtn');
     if (calculateBtn) {
-        calculateBtn.addEventListener('click', () => {
-            this.calculateStatistics();
+        // Удаляем старый обработчик, если есть
+        calculateBtn.removeEventListener('click', this.calculateHandler);
+
+        // Добавляем новый обработчик
+        this.calculateHandler = () => {
             this.sendAnalysisRequest();
-        });
+        };
+
+        calculateBtn.addEventListener('click', this.calculateHandler.bind(this));
     }
 };
 
 // Поворот canvas
-App.rotateCanvas = function() {
+App.rotateCanvas = function () {
     // Здесь можно реализовать поворот canvas
     console.log('Поворот:', this.state.rotation);
 };
 
 // Масштабирование canvas
-App.applyZoom = function() {
+App.applyZoom = function () {
     // Здесь можно реализовать масштабирование canvas
     console.log('Масштаб:', this.state.scale);
 };
