@@ -124,13 +124,20 @@ App.setupSettingsEventListeners = function() {
     const nextBtn = document.getElementById('nextBtn');
     if (nextBtn) {
         // Удаляем старый обработчик, если есть
-        nextBtn.removeEventListener('click', this.nextBtnHandler);
+        if (this.nextBtnHandler) {
+            nextBtn.removeEventListener('click', this.nextBtnHandler);
+        }
+        
         // Добавляем новый
-        this.nextBtnHandler = () => {
+        this.nextBtnHandler = (e) => {
+            e.preventDefault(); // Предотвращаем возможное обновление страницы
+            
             // Собираем данные
             const genderElement = document.querySelector('input[name="gender"]:checked');
             const gender = genderElement?.value;
             const birthDate = document.getElementById('birthDate')?.value;
+            
+            console.log('Собранные данные:', { gender, birthDate, selectedTest: this.state.userData.selectedTest });
             
             // Валидация
             if (!gender) {
@@ -153,9 +160,12 @@ App.setupSettingsEventListeners = function() {
             this.state.userData.birthDate = birthDate;
             this.saveToLocalStorage();
             
+            console.log('Переход на страницу раскраски с данными:', this.state.userData);
+            
             // Переходим на страницу раскраски
             this.showPage('coloring');
         };
+        
         nextBtn.addEventListener('click', this.nextBtnHandler.bind(this));
     }
 };
