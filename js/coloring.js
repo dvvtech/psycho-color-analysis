@@ -67,60 +67,60 @@ App.handleResize = function () {
 };
 
 // Инициализация палитры цветов
-App.initColorPalette = function() {
+App.initColorPalette = function () {
     const palette = document.getElementById('colorPalette');
     if (!palette) return;
-    
+
     palette.innerHTML = '';
-    
+
     // Разделяем цвета на два ряда
     const firstRow = this.config.colors.slice(0, 6);
     const secondRow = this.config.colors.slice(6, 12);
-    
+
     // Создаем контейнер для первого ряда
     const firstRowContainer = document.createElement('div');
     firstRowContainer.className = 'flex flex-wrap gap-2 mb-2';
-    
+
     // Создаем контейнер для второго ряда
     const secondRowContainer = document.createElement('div');
     secondRowContainer.className = 'flex flex-wrap gap-2';
-    
+
     // Добавляем цвета в первый ряд
     firstRow.forEach(color => {
         const btn = this.createColorButton(color);
         firstRowContainer.appendChild(btn);
     });
-    
+
     // Добавляем цвета во второй ряд
     secondRow.forEach(color => {
         const btn = this.createColorButton(color);
         secondRowContainer.appendChild(btn);
     });
-    
+
     // Добавляем ряды в палитру
     palette.appendChild(firstRowContainer);
     palette.appendChild(secondRowContainer);
 };
 
 // Вспомогательная функция для создания кнопки цвета
-App.createColorButton = function(color) {
+App.createColorButton = function (color) {
     const btn = document.createElement('button');
     btn.className = `w-8 h-8 rounded-full border-2 transition-all ${this.state.currentColor === color.hex ? 'border-blue-500 scale-110' : 'border-gray-300'}`;
     btn.style.backgroundColor = color.hex;
     btn.title = color.name;
-    
+
     btn.addEventListener('click', () => {
         // Обновляем все кнопки в обоих рядах
         document.querySelectorAll('#colorPalette button').forEach(b => {
             b.classList.remove('border-blue-500', 'scale-110');
             b.classList.add('border-gray-300');
         });
-        
+
         btn.classList.remove('border-gray-300');
         btn.classList.add('border-blue-500', 'scale-110');
         this.state.currentColor = color.hex;
     });
-    
+
     return btn;
 };
 
@@ -635,40 +635,40 @@ App.hideResults = function () {
 };
 
 // Настройка обработчиков событий
+// Настройка обработчиков событий
 App.setupColoringEventListeners = function () {
+    console.log('Настройка обработчиков событий');
+
     // Кнопка Главная
     const homeBtn = document.getElementById('homeBtn');
     if (homeBtn) {
-        // Удаляем старый обработчик
-        homeBtn.removeEventListener('click', this.homeBtnHandler);
+        // Удаляем все старые обработчики
+        homeBtn.replaceWith(homeBtn.cloneNode(true));
+        const newHomeBtn = document.getElementById('homeBtn');
 
-        // Добавляем новый
-        this.homeBtnHandler = () => {
+        newHomeBtn.addEventListener('click', () => {
             console.log('Нажата кнопка Главная');
-
-            // Сбрасываем состояние раскраски
             this.resetColoringState();
-
-            // Переходим на страницу настроек
             this.showPage('settings');
-        };
-
-        homeBtn.addEventListener('click', this.homeBtnHandler.bind(this));
+        });
     }
 
     // Поворот
     const rotateLeft = document.getElementById('rotateLeft');
-    const rotateRight = document.getElementById('rotateRight');
-
     if (rotateLeft) {
-        rotateLeft.addEventListener('click', () => {
+        rotateLeft.replaceWith(rotateLeft.cloneNode(true));
+        const newRotateLeft = document.getElementById('rotateLeft');
+        newRotateLeft.addEventListener('click', () => {
             this.state.rotation = (this.state.rotation - 90) % 360;
             this.rotateCanvas();
         });
     }
 
+    const rotateRight = document.getElementById('rotateRight');
     if (rotateRight) {
-        rotateRight.addEventListener('click', () => {
+        rotateRight.replaceWith(rotateRight.cloneNode(true));
+        const newRotateRight = document.getElementById('rotateRight');
+        newRotateRight.addEventListener('click', () => {
             this.state.rotation = (this.state.rotation + 90) % 360;
             this.rotateCanvas();
         });
@@ -676,98 +676,113 @@ App.setupColoringEventListeners = function () {
 
     // Масштабирование
     const zoomIn = document.getElementById('zoomIn');
-    const zoomOut = document.getElementById('zoomOut');
-    const zoomLevel = document.getElementById('zoomLevel');
-
     if (zoomIn) {
-        zoomIn.addEventListener('click', () => {
+        zoomIn.replaceWith(zoomIn.cloneNode(true));
+        const newZoomIn = document.getElementById('zoomIn');
+        newZoomIn.addEventListener('click', () => {
             this.state.scale = Math.min(this.state.scale + 0.1, 2);
             this.applyZoom();
+            const zoomLevel = document.getElementById('zoomLevel');
             if (zoomLevel) zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
         });
     }
 
+    const zoomOut = document.getElementById('zoomOut');
     if (zoomOut) {
-        zoomOut.addEventListener('click', () => {
+        zoomOut.replaceWith(zoomOut.cloneNode(true));
+        const newZoomOut = document.getElementById('zoomOut');
+        newZoomOut.addEventListener('click', () => {
             this.state.scale = Math.max(this.state.scale - 0.1, 0.5);
             this.applyZoom();
+            const zoomLevel = document.getElementById('zoomLevel');
             if (zoomLevel) zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
+        });
+    }
+
+    // Размер кисти
+    const brushSize = document.getElementById('brushSize');
+    const brushSizeValue = document.getElementById('brushSizeValue');
+    if (brushSize && brushSizeValue) {
+        brushSize.replaceWith(brushSize.cloneNode(true));
+        const newBrushSize = document.getElementById('brushSize');
+        newBrushSize.addEventListener('input', (e) => {
+            this.state.brushSize = parseInt(e.target.value);
+            brushSizeValue.textContent = `${this.state.brushSize}px`;
         });
     }
 
     // Undo/Redo
     const undoBtn = document.getElementById('undoBtn');
-    const redoBtn = document.getElementById('redoBtn');
-
     if (undoBtn) {
-        undoBtn.addEventListener('click', this.undo.bind(this));
+        undoBtn.replaceWith(undoBtn.cloneNode(true));
+        const newUndoBtn = document.getElementById('undoBtn');
+        newUndoBtn.addEventListener('click', this.undo.bind(this));
     }
 
+    const redoBtn = document.getElementById('redoBtn');
     if (redoBtn) {
-        redoBtn.addEventListener('click', this.redo.bind(this));
+        redoBtn.replaceWith(redoBtn.cloneNode(true));
+        const newRedoBtn = document.getElementById('redoBtn');
+        newRedoBtn.addEventListener('click', this.redo.bind(this));
     }
 
     // Рассчитать
     const calculateBtn = document.getElementById('calculateBtn');
     if (calculateBtn) {
-        // Удаляем старый обработчик, если есть
-        calculateBtn.removeEventListener('click', this.calculateHandler);
-
-        // Добавляем новый обработчик
-        this.calculateHandler = () => {
+        calculateBtn.replaceWith(calculateBtn.cloneNode(true));
+        const newCalculateBtn = document.getElementById('calculateBtn');
+        newCalculateBtn.addEventListener('click', () => {
             this.sendAnalysisRequest();
-        };
-
-        calculateBtn.addEventListener('click', this.calculateHandler.bind(this));
+        });
     }
 
-    // Кнопка Очистить
+    // Кнопка Очистить - ИСПРАВЛЕНО
     const clearBtn = document.getElementById('clearBtn');
     if (clearBtn) {
-        // Удаляем старый обработчик, если есть
-        clearBtn.removeEventListener('click', this.clearHandler);
+        // Полностью заменяем кнопку, чтобы удалить все старые обработчики
+        clearBtn.replaceWith(clearBtn.cloneNode(true));
+        const newClearBtn = document.getElementById('clearBtn');
 
         // Добавляем новый обработчик
-        this.clearHandler = () => {
+        newClearBtn.addEventListener('click', () => {
+            console.log('Нажата кнопка Очистить');
             this.clearColoring();
-        };
-
-        clearBtn.addEventListener('click', this.clearHandler.bind(this));
+        });
     }
 };
 
 // Сброс UI страницы раскраски
-App.resetColoringUI = function() {
+App.resetColoringUI = function () {
     console.log('Сброс UI страницы раскраски');
-    
+
     // Скрываем панель результатов
     const resultsPanel = document.querySelector('.results-panel');
     if (resultsPanel) {
         resultsPanel.classList.add('hidden');
     }
-    
+
     // Сбрасываем размеры контейнера
     const canvasContainer = document.querySelector('.canvas-container');
     if (canvasContainer) {
         canvasContainer.classList.remove('w-1/2', 'float-left');
         canvasContainer.classList.add('mx-auto');
     }
-    
+
     // Скрываем результаты и ошибки
     this.hideResults();
     this.hideError();
     this.hideLoading();
-    
+
     // Очищаем статистику
     const statsContainer = document.getElementById('statsContainer');
     if (statsContainer) {
         statsContainer.innerHTML = '';
     }
-    
+
     // Сбрасываем выбранный цвет на первый в списке
     if (this.config.colors.length > 0) {
         this.state.currentColor = this.config.colors[0].hex;
-        
+
         // Обновляем UI палитры
         document.querySelectorAll('#colorPalette button').forEach((btn, index) => {
             if (index === 0) {
@@ -779,43 +794,43 @@ App.resetColoringUI = function() {
             }
         });
     }
-    
+
     // Сбрасываем размер кисти
     this.state.brushSize = 5;
     const brushSize = document.getElementById('brushSize');
     const brushSizeValue = document.getElementById('brushSizeValue');
     if (brushSize) brushSize.value = '5';
     if (brushSizeValue) brushSizeValue.textContent = '5px';
-    
+
     console.log('UI страницы раскраски сброшен');
 };
 
 // Очистка раскраски и закрытие результатов
-App.clearColoring = function() {
+App.clearColoring = function () {
     console.log('Очистка раскраски');
-    
+
     // Подтверждение действия (опционально)
     if (confirm('Очистить раскраску? Все изменения будут потеряны.')) {
-        
+
         // Перезагружаем исходное изображение без раскраски
         if (this.state.userData.selectedTest) {
             this.loadImageFromFile(this.state.userData.selectedTest);
         } else {
             this.drawPlaceholderImage();
         }
-        
+
         // Сбрасываем состояние
         this.state.undoStack = [];
         this.state.redoStack = [];
         this.state.colorUsage = {};
         this.updateUndoRedoButtons();
-        
+
         // Скрываем панель результатов и сбрасываем UI
         this.resetColoringUI();
-        
+
         // Сохраняем начальное состояние
         this.saveState();
-        
+
         console.log('Раскраска очищена');
     }
 };
