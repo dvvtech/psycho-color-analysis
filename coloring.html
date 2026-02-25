@@ -1,71 +1,64 @@
 <div class="h-screen flex flex-col">
     <!-- Верхняя панель инструментов -->
     <div class="bg-white border-b border-gray-200 p-4 flex-shrink-0">
-        <div class="flex flex-wrap items-center gap-4">
+        <div class="flex flex-wrap items-center gap-2">
             <!-- Кнопка Главная -->
-            <button id="homeBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+            <button id="homeBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition whitespace-nowrap">
                 <i class="fas fa-home mr-2"></i>Главная
             </button>
 
             <!-- Выбор цвета -->
             <div class="flex items-center space-x-2">
-                <span class="text-sm text-gray-600">Цвет:</span>
-                <div class="flex flex-wrap gap-2 max-w-xs" id="colorPalette"></div>
+                <span class="text-sm text-gray-600 whitespace-nowrap">Цвет:</span>
+                <div class="flex flex-wrap gap-2 max-w-[280px]" id="colorPalette"></div>
             </div>
 
             <!-- Размер кисти -->
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 whitespace-nowrap">
                 <span class="text-sm text-gray-600">Кисть:</span>
-                <input type="range" id="brushSize" min="1" max="20" value="5" class="w-24">
-                <span id="brushSizeValue" class="text-sm text-gray-600">5px</span>
+                <input type="range" id="brushSize" min="1" max="20" value="5" class="w-20">
+                <span id="brushSizeValue" class="text-sm text-gray-600 w-8">5px</span>
             </div>
 
             <!-- Поворот -->
-            <div class="flex items-center space-x-2">
-                <button id="rotateLeft" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
-                    title="Повернуть влево">
+            <div class="flex items-center space-x-1">
+                <button id="rotateLeft" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition" title="Повернуть влево">
                     <i class="fas fa-undo-alt"></i>
                 </button>
-                <button id="rotateRight" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
-                    title="Повернуть вправо">
+                <button id="rotateRight" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition" title="Повернуть вправо">
                     <i class="fas fa-redo-alt"></i>
                 </button>
             </div>
 
             <!-- Масштабирование -->
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-1">
                 <button id="zoomOut" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition" title="Уменьшить">
                     <i class="fas fa-search-minus"></i>
                 </button>
-                <span id="zoomLevel" class="text-sm text-gray-600">100%</span>
+                <span id="zoomLevel" class="text-sm text-gray-600 w-12 text-center">100%</span>
                 <button id="zoomIn" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition" title="Увеличить">
                     <i class="fas fa-search-plus"></i>
                 </button>
             </div>
 
             <!-- Undo/Redo -->
-            <div class="flex items-center space-x-2">
-                <button id="undoBtn"
-                    class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed"
-                    disabled>
+            <div class="flex items-center space-x-1">
+                <button id="undoBtn" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed" disabled>
                     <i class="fas fa-undo"></i>
                 </button>
-                <button id="redoBtn"
-                    class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed"
-                    disabled>
+                <button id="redoBtn" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed" disabled>
                     <i class="fas fa-redo"></i>
                 </button>
             </div>
 
             <!-- Кнопки Рассчитать и Очистить -->
             <div class="flex items-center space-x-2 ml-auto">
-                <button id="clearBtn"
-                    class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
-                    Очистить
-                </button>
-                <button id="calculateBtn" class="px-6 py-2 btn-primary text-white rounded-lg font-semibold">
+                <button id="calculateBtn" class="px-4 py-2 btn-primary text-white rounded-lg font-semibold whitespace-nowrap">
                     Рассчитать
                 </button>
+                <button id="clearBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition whitespace-nowrap">
+                    Очистить
+                </button>                
             </div>
         </div>
     </div>

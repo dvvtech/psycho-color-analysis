@@ -144,7 +144,67 @@
             transition: opacity 0.3s, transform 0.3s;
         }
 
-        
+        /* Стили для верхней панели инструментов */
+        .bg-white.border-b {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .bg-white.border-b .flex {
+            min-width: min-content;
+        }
+
+        /* Уменьшаем отступы между группами элементов */
+        .space-x-2> :not([hidden])~ :not([hidden]) {
+            margin-left: 0.5rem;
+        }
+
+        .space-x-1> :not([hidden])~ :not([hidden]) {
+            margin-left: 0.25rem;
+        }
+
+        /* Фиксированная ширина для элементов, чтобы они не прыгали */
+        #brushSize {
+            width: 80px;
+        }
+
+        #zoomLevel {
+            width: 48px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        /* Адаптация для мобильных устройств */
+        @media (max-width: 1200px) {
+            .bg-white.border-b .flex {
+                flex-wrap: wrap;
+            }
+
+            #colorPalette {
+                max-width: 240px;
+            }
+        }
+
+        /* Стили для палитры цветов */
+        #colorPalette {
+            max-width: 280px;
+        }
+
+        #colorPalette button {
+            transition: all 0.2s ease;
+        }
+
+        #colorPalette button:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Для сетки 6 колонок */
+        .grid-cols-6 {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
     </style>
 </head>
 
