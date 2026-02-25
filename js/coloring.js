@@ -654,13 +654,15 @@ App.setupColoringEventListeners = function () {
     }
 
     // Поворот
+    // Поворот
     const rotateLeft = document.getElementById('rotateLeft');
     if (rotateLeft) {
         rotateLeft.replaceWith(rotateLeft.cloneNode(true));
         const newRotateLeft = document.getElementById('rotateLeft');
         newRotateLeft.addEventListener('click', () => {
-            this.state.rotation = (this.state.rotation - 90 + 360) % 360; // Обеспечиваем положительное значение
-            this.rotateCanvas(); // или this.rotateCanvas() для более сложного варианта
+            // Вычисляем новый угол поворота (обеспечиваем значения 0, 90, 180, 270)
+            this.state.rotation = (this.state.rotation - 90 + 360) % 360;
+            this.rotateCanvas();
         });
     }
 
@@ -669,8 +671,9 @@ App.setupColoringEventListeners = function () {
         rotateRight.replaceWith(rotateRight.cloneNode(true));
         const newRotateRight = document.getElementById('rotateRight');
         newRotateRight.addEventListener('click', () => {
+            // Вычисляем новый угол поворота (обеспечиваем значения 0, 90, 180, 270)
             this.state.rotation = (this.state.rotation + 90) % 360;
-            this.rotateCanvas(); // или this.rotateCanvas() для более сложного варианта
+            this.rotateCanvas();
         });
     }
 
@@ -835,89 +838,39 @@ App.clearColoring = function () {
     }
 };
 
-// Поворот canvas
+// Поворот canvas с сохранением раскраски (оптимизированная версия)
 App.rotateCanvas = function () {
-    // Получаем текущее изображение
-    const currentImage = this.state.userData.selectedTest;
-    if (!currentImage || !this.state.loadedImages[currentImage.filename]) {
-        console.error('Изображение не загружено');
-        return;
-    }
-
-    const img = this.state.loadedImages[currentImage.filename];
+    console.log('Поворот на:', this.state.rotation, 'градусов');
 
     // Создаем временный canvas для поворота
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
 
-    // Устанавливаем размеры временного canvas (меняем местами при повороте на 90 или 270 градусов)
-    if (this.state.rotation % 180 === 0) {
-        // 0° или 180°
-        tempCanvas.width = this.config.canvasWidth;
-        tempCanvas.height = this.config.canvasHeight;
-    } else {
-        // 90° или 270° - меняем местами ширину и высоту
-        tempCanvas.width = this.config.canvasHeight;
-        tempCanvas.height = this.config.canvasWidth;
-    }
+    // Устанавливаем размеры временного canvas (равные основному)
+    tempCanvas.width = this.canvas.width;
+    tempCanvas.height = this.canvas.height;
 
-    // Очищаем временный canvas белым цветом
+    // Очищаем временный canvas
     tempCtx.fillStyle = '#ffffff';
     tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
-    // Перемещаем контекст в центр для поворота
+    // Поворачиваем контекст
     tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
     tempCtx.rotate(this.state.rotation * Math.PI / 180);
 
-    // Вычисляем размеры для рисования с сохранением пропорций
-    const imgRatio = img.width / img.height;
-    let drawWidth, drawHeight;
+    // Рисуем текущее содержимое основного canvas на временном с поворотом
+    tempCtx.drawImage(this.canvas, -this.canvas.width / 2, -this.canvas.height / 2, this.canvas.width, this.canvas.height);
 
-    if (this.state.rotation % 180 === 0) {
-        // Для 0° и 180° используем оригинальные размеры canvas
-        const canvasRatio = this.config.canvasWidth / this.config.canvasHeight;
+    // Очищаем основной canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        if (imgRatio > canvasRatio) {
-            drawWidth = this.config.canvasWidth;
-            drawHeight = this.config.canvasWidth / imgRatio;
-        } else {
-            drawHeight = this.config.canvasHeight;
-            drawWidth = this.config.canvasHeight * imgRatio;
-        }
-    } else {
-        // Для 90° и 270° размеры canvas поменялись местами
-        const canvasRatio = this.config.canvasHeight / this.config.canvasWidth;
+    // Рисуем повернутое изображение обратно на основной canvas
+    this.ctx.drawImage(tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
 
-        if (imgRatio > canvasRatio) {
-            drawWidth = this.config.canvasHeight;
-            drawHeight = this.config.canvasHeight / imgRatio;
-        } else {
-            drawHeight = this.config.canvasWidth;
-            drawWidth = this.config.canvasWidth * imgRatio;
-        }
-    }
+    // Сохраняем состояние после поворота
+    this.saveState();
 
-    // Рисуем изображение в центре с учетом поворота
-    tempCtx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-
-    // Если есть текущая раскраска, нужно её тоже повернуть
-    // Получаем текущее состояние canvas (с раскраской)
-    const currentState = this.canvas.toDataURL();
-    const currentImg = new Image();
-
-    currentImg.onload = () => {
-        // Очищаем основной canvas
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Рисуем повернутое изображение на основном canvas
-        this.ctx.drawImage(tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
-
-        // Сохраняем состояние после поворота
-        this.saveState();
-    };
-
-    currentImg.src = currentState;
+    console.log('Поворот завершен, раскраска сохранена');
 };
 
 // Масштабирование canvas
