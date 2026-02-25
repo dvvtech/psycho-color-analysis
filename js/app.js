@@ -70,6 +70,13 @@ const App = {
 
     // Метод для показа страницы
     showPage(pageId) {
+        console.log('Переход на страницу:', pageId);
+
+        // Если уходим со страницы coloring, сбрасываем состояние
+        if (this.state.currentPage === 'coloring' && pageId !== 'coloring') {
+            this.resetColoringState();
+        }
+
         document.querySelectorAll('.page-container').forEach(el => {
             el.classList.add('hidden');
         });
@@ -86,6 +93,65 @@ const App = {
                 this.initColoringPage();
             }
         }
+    },
+
+    // Сброс состояния страницы раскраски
+    resetColoringState() {
+        console.log('Сброс состояния страницы раскраски');
+
+        // Сбрасываем состояние рисования
+        this.state.isDrawing = false;
+        this.state.rotation = 0;
+        this.state.scale = 1;
+        this.state.currentColor = '#ef4444';
+        this.state.brushSize = 5;
+        this.state.lastX = 0;
+        this.state.lastY = 0;
+        this.state.undoStack = [];
+        this.state.redoStack = [];
+        this.state.colorUsage = {};
+
+        // Очищаем кэш загруженных изображений
+        this.state.loadedImages = {};
+
+        // Если есть canvas, очищаем его
+        const canvas = document.getElementById('testCanvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Скрываем панель результатов
+        const resultsPanel = document.querySelector('.results-panel');
+        if (resultsPanel) {
+            resultsPanel.classList.add('hidden');
+        }
+
+        // Сбрасываем размеры контейнера
+        const canvasContainer = document.querySelector('.canvas-container');
+        if (canvasContainer) {
+            canvasContainer.classList.remove('w-1/2', 'float-left');
+            canvasContainer.classList.add('mx-auto');
+        }
+
+        // Очищаем статистику
+        const statsContainer = document.getElementById('statsContainer');
+        if (statsContainer) {
+            statsContainer.innerHTML = '';
+        }
+
+        // Скрываем результаты и ошибки
+        const resultsElement = document.getElementById('results');
+        if (resultsElement) resultsElement.style.display = 'none';
+
+        const errorElement = document.getElementById('error');
+        if (errorElement) errorElement.style.display = 'none';
+
+        const loadingElement = document.getElementById('loading');
+        if (loadingElement) loadingElement.style.display = 'none';
+
+        console.log('Состояние раскраски сброшено');
     },
 
     // Сохранение в localStorage
@@ -173,15 +239,31 @@ window.addEventListener('pageshow', (event) => {
     // Проверяем, что страница загружена из кеша (при навигации назад/вперед)
     if (event.persisted) {
         console.log('Страница загружена из кеша, обновляем данные');
-        
+
         // Загружаем актуальные данные из localStorage
         App.loadFromLocalStorage();
-        
+
         // Если текущая страница - settings, обновляем форму
         if (!document.getElementById('settings').classList.contains('hidden')) {
             if (typeof App.initSettingsPage === 'function') {
                 App.initSettingsPage();
             }
         }
+
+        // Если текущая страница - coloring, сбрасываем состояние
+        if (!document.getElementById('coloring').classList.contains('hidden')) {
+            App.resetColoringState();
+            if (typeof App.initColoringPage === 'function') {
+                App.initColoringPage();
+            }
+        }
+    }
+});
+
+// Очистка при перезагрузке страницы
+window.addEventListener('beforeunload', () => {
+    // Если мы на странице раскраски, сбрасываем состояние
+    if (App.state.currentPage === 'coloring') {
+        App.resetColoringState();
     }
 });

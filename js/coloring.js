@@ -12,6 +12,24 @@ App.initColoringPage = function () {
     this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d');
 
+    // Скрываем панель результатов при загрузке страницы
+    const resultsPanel = document.querySelector('.results-panel');
+    if (resultsPanel) {
+        resultsPanel.classList.add('hidden');
+    }
+
+    // Сбрасываем размеры контейнера
+    const canvasContainer = document.querySelector('.canvas-container');
+    if (canvasContainer) {
+        canvasContainer.classList.remove('w-1/2', 'float-left');
+        canvasContainer.classList.add('mx-auto');
+    }
+
+    // Скрываем результаты и ошибки
+    this.hideResults();
+    this.hideError();
+    this.hideLoading();
+
     this.setupCanvas();
     this.initColorPalette();
     this.setupDrawingTools();
@@ -20,7 +38,10 @@ App.initColoringPage = function () {
 
     this.state.undoStack = [];
     this.state.redoStack = [];
+    this.state.colorUsage = {}; // Сбрасываем статистику
     this.updateUndoRedoButtons();
+
+    console.log('Страница раскраски инициализирована');
 };
 
 // Настройка canvas
@@ -153,12 +174,15 @@ App.getCanvasCoordinates = function (e) {
 };
 
 // Загрузка выбранного изображения
-App.loadSelectedImage = function () {
+App.loadSelectedImage = function() {
     if (this.state.userData.selectedTest) {
         this.loadImageFromFile(this.state.userData.selectedTest);
     } else {
         this.drawPlaceholderImage();
     }
+    
+    // Сбрасываем UI после загрузки изображения
+    this.resetColoringUI();
 };
 
 // Загрузка изображения из файла
@@ -579,11 +603,22 @@ App.hideResults = function () {
 // Настройка обработчиков событий
 App.setupColoringEventListeners = function () {
     // Кнопка Главная
-    const homeBtn = document.getElementById('homeBtn');
     if (homeBtn) {
-        homeBtn.addEventListener('click', () => {
+        // Удаляем старый обработчик
+        homeBtn.removeEventListener('click', this.homeBtnHandler);
+
+        // Добавляем новый
+        this.homeBtnHandler = () => {
+            console.log('Нажата кнопка Главная');
+
+            // Сбрасываем состояние раскраски
+            this.resetColoringState();
+
+            // Переходим на страницу настроек
             this.showPage('settings');
-        });
+        };
+
+        homeBtn.addEventListener('click', this.homeBtnHandler.bind(this));
     }
 
     // Поворот
@@ -650,6 +685,60 @@ App.setupColoringEventListeners = function () {
 
         calculateBtn.addEventListener('click', this.calculateHandler.bind(this));
     }
+};
+
+// Сброс UI страницы раскраски
+App.resetColoringUI = function () {
+    console.log('Сброс UI страницы раскраски');
+
+    // Скрываем панель результатов
+    const resultsPanel = document.querySelector('.results-panel');
+    if (resultsPanel) {
+        resultsPanel.classList.add('hidden');
+    }
+
+    // Сбрасываем размеры контейнера
+    const canvasContainer = document.querySelector('.canvas-container');
+    if (canvasContainer) {
+        canvasContainer.classList.remove('w-1/2', 'float-left');
+        canvasContainer.classList.add('mx-auto');
+    }
+
+    // Скрываем результаты и ошибки
+    this.hideResults();
+    this.hideError();
+    this.hideLoading();
+
+    // Очищаем статистику
+    const statsContainer = document.getElementById('statsContainer');
+    if (statsContainer) {
+        statsContainer.innerHTML = '';
+    }
+
+    // Сбрасываем выбранный цвет на первый в списке
+    if (this.config.colors.length > 0) {
+        this.state.currentColor = this.config.colors[0].hex;
+
+        // Обновляем UI палитры
+        document.querySelectorAll('#colorPalette button').forEach((btn, index) => {
+            if (index === 0) {
+                btn.classList.remove('border-gray-300');
+                btn.classList.add('border-blue-500', 'scale-110');
+            } else {
+                btn.classList.remove('border-blue-500', 'scale-110');
+                btn.classList.add('border-gray-300');
+            }
+        });
+    }
+
+    // Сбрасываем размер кисти
+    this.state.brushSize = 5;
+    const brushSize = document.getElementById('brushSize');
+    const brushSizeValue = document.getElementById('brushSizeValue');
+    if (brushSize) brushSize.value = '5';
+    if (brushSizeValue) brushSizeValue.textContent = '5px';
+
+    console.log('UI страницы раскраски сброшен');
 };
 
 // Поворот canvas

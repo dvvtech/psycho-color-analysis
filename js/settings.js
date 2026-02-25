@@ -169,3 +169,14 @@ App.setupSettingsEventListeners = function() {
         nextBtn.addEventListener('click', this.nextBtnHandler.bind(this));
     }
 };
+
+// Очистка данных формы
+App.clearFormData = function() {
+    this.state.userData = {
+        gender: '',
+        birthDate: '',
+        selectedTest: null
+    };
+    this.saveToLocalStorage();
+    this.loadSavedData(); // Обновляем форму
+};
