@@ -6,30 +6,32 @@
             <button id="homeBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
                 <i class="fas fa-home mr-2"></i>Главная
             </button>
-            
+
             <!-- Выбор цвета -->
             <div class="flex items-center space-x-2">
                 <span class="text-sm text-gray-600">Цвет:</span>
                 <div class="flex flex-wrap gap-2 max-w-xs" id="colorPalette"></div>
             </div>
-            
+
             <!-- Размер кисти -->
             <div class="flex items-center space-x-2">
                 <span class="text-sm text-gray-600">Кисть:</span>
                 <input type="range" id="brushSize" min="1" max="20" value="5" class="w-24">
                 <span id="brushSizeValue" class="text-sm text-gray-600">5px</span>
             </div>
-            
+
             <!-- Поворот -->
             <div class="flex items-center space-x-2">
-                <button id="rotateLeft" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition" title="Повернуть влево">
+                <button id="rotateLeft" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+                    title="Повернуть влево">
                     <i class="fas fa-undo-alt"></i>
                 </button>
-                <button id="rotateRight" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition" title="Повернуть вправо">
+                <button id="rotateRight" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+                    title="Повернуть вправо">
                     <i class="fas fa-redo-alt"></i>
                 </button>
             </div>
-            
+
             <!-- Масштабирование -->
             <div class="flex items-center space-x-2">
                 <button id="zoomOut" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition" title="Уменьшить">
@@ -40,59 +42,71 @@
                     <i class="fas fa-search-plus"></i>
                 </button>
             </div>
-            
+
             <!-- Undo/Redo -->
             <div class="flex items-center space-x-2">
-                <button id="undoBtn" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed" disabled>
+                <button id="undoBtn"
+                    class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed"
+                    disabled>
                     <i class="fas fa-undo"></i>
                 </button>
-                <button id="redoBtn" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed" disabled>
+                <button id="redoBtn"
+                    class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed"
+                    disabled>
                     <i class="fas fa-redo"></i>
                 </button>
             </div>
-            
-            <!-- Кнопка Рассчитать -->
-            <button id="calculateBtn" class="px-6 py-2 btn-primary text-white rounded-lg font-semibold ml-auto">
-                Рассчитать
-            </button>
+
+            <!-- Кнопки Рассчитать и Очистить -->
+            <div class="flex items-center space-x-2 ml-auto">
+                <button id="clearBtn"
+                    class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
+                    Очистить
+                </button>
+                <button id="calculateBtn" class="px-6 py-2 btn-primary text-white rounded-lg font-semibold">
+                    Рассчитать
+                </button>
+            </div>
         </div>
     </div>
-    
+
     <!-- Основной контент с фиксированной высотой -->
     <div class="flex-1 p-6 overflow-hidden">
         <div class="relative h-full flex">
             <!-- Холст -->
             <div class="canvas-container flex-shrink-0">
-                <canvas id="testCanvas" width="785" height="800" class="border border-gray-200 rounded-lg shadow-lg w-full h-auto"></canvas>
+                <canvas id="testCanvas" width="785" height="800"
+                    class="border border-gray-200 rounded-lg shadow-lg w-full h-auto"></canvas>
             </div>
-            
+
             <!-- Панель результатов (изначально скрыта) -->
             <div class="results-panel hidden ml-6 flex-1 overflow-y-auto">
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4">Результаты анализа</h3>
-                    
+
                     <!-- Статистика цветов -->
                     <div id="statsContainer" class="mb-6"></div>
-                    
+
                     <!-- Результаты API -->
                     <div id="loading" class="hidden text-center py-8">
                         <i class="fas fa-spinner fa-spin text-4xl text-blue-500"></i>
                         <p class="text-gray-600 mt-2">Анализ данных...</p>
                     </div>
-                    
-                    <div id="error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4"></div>
-                    
+
+                    <div id="error"
+                        class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4"></div>
+
                     <div id="results" class="hidden">
                         <div class="mb-4">
                             <h4 class="font-semibold text-gray-700 mb-2">Основная характеристика:</h4>
                             <p id="mainCharacteristic" class="text-gray-600 bg-gray-50 p-3 rounded-lg"></p>
                         </div>
-                        
+
                         <div id="strengthsSection" class="mb-4 hidden">
                             <h4 class="font-semibold text-gray-700 mb-2">Сильные стороны:</h4>
                             <ul id="strengthsList" class="list-disc list-inside text-gray-600 space-y-1"></ul>
                         </div>
-                        
+
                         <div class="mb-4">
                             <h4 class="font-semibold text-gray-700 mb-2">Рекомендации:</h4>
                             <ul id="recommendationsList" class="list-disc list-inside text-gray-600 space-y-1"></ul>
