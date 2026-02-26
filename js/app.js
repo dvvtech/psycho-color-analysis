@@ -114,10 +114,11 @@ const App = {
         this.state.redoStack = [];
         this.state.colorUsage = {};
 
-        // Сбрасываем классы поворота на canvas
+        // Сбрасываем трансформации на canvas
         const canvas = document.getElementById('testCanvas');
         if (canvas) {
-            canvas.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
+            canvas.style.transform = '';
+            canvas.style.transformOrigin = '';
         }
 
         // Очищаем кэш загруженных изображений

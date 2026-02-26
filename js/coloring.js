@@ -155,7 +155,7 @@ App.startDrawing = function (e) {
     const pos = this.getCanvasCoordinates(e);
     this.state.lastX = pos.x;
     this.state.lastY = pos.y;
-    
+
     // Для создания точки при клике (без движения)
     this.ctx.beginPath();
     this.ctx.strokeStyle = this.state.currentColor;
@@ -196,7 +196,7 @@ App.stopDrawing = function () {
 // Получение координат на canvas с учетом поворота
 App.getCanvasCoordinates = function (e) {
     const rect = this.canvas.getBoundingClientRect();
-    
+
     let clientX, clientY;
 
     if (e.touches) {
@@ -210,10 +210,10 @@ App.getCanvasCoordinates = function (e) {
     // Получаем координаты относительно левого верхнего угла canvas (без поворота)
     let x = (clientX - rect.left) * (this.canvas.width / rect.width);
     let y = (clientY - rect.top) * (this.canvas.height / rect.height);
-    
+
     // Применяем обратное преобразование в зависимости от угла поворота
     let rotatedX, rotatedY;
-    
+
     switch (this.state.rotation) {
         case 90:
             // При повороте на 90° по часовой стрелке:
@@ -222,30 +222,30 @@ App.getCanvasCoordinates = function (e) {
             rotatedX = y;
             rotatedY = this.canvas.width - x;
             break;
-            
+
         case 180:
             // При повороте на 180°:
             // (x, y) -> (width - x, height - y)
             rotatedX = this.canvas.width - x;
             rotatedY = this.canvas.height - y;
             break;
-            
+
         case 270:
             // При повороте на 270° по часовой стрелке (или 90° против):
             // (x, y) -> (height - y, width - x) с дополнительным преобразованием
             rotatedX = this.canvas.height - y;
             rotatedY = x;
             break;
-            
+
         default: // 0 градусов
             rotatedX = x;
             rotatedY = y;
     }
-    
+
     // Проверяем, что координаты в пределах canvas
     rotatedX = Math.max(0, Math.min(this.canvas.width, rotatedX));
     rotatedY = Math.max(0, Math.min(this.canvas.height, rotatedY));
-    
+
     return { x: rotatedX, y: rotatedY };
 };
 
@@ -270,15 +270,24 @@ App.loadImageFromFile = function (image) {
         this.state.loadedImages[image.filename] = img;
         this.state.rotation = 0;
         this.state.scale = 1;
-        
-        // Сбрасываем классы поворота
-        this.canvas.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
-        
+
+        // Сбрасываем трансформации
+        this.canvas.style.transform = '';
+        this.canvas.style.transformOrigin = '';
+
         this.drawImageOnCanvas(img);
         this.saveState();
         this.state.undoStack = [];
         this.state.redoStack = [];
         this.updateUndoRedoButtons();
+
+        // Обновляем отображение масштаба
+        const zoomLevel = document.getElementById('zoomLevel');
+        if (zoomLevel) zoomLevel.textContent = '100%';
+
+        // Обновляем отображение угла
+        const rotationAngle = document.getElementById('rotationAngle');
+        if (rotationAngle) rotationAngle.textContent = '0°';
     };
 
     img.onerror = () => {
@@ -861,9 +870,11 @@ App.clearColoring = function () {
     // Подтверждение действия
     if (confirm('Очистить раскраску? Все изменения будут потеряны.')) {
 
-        // Сбрасываем поворот
+        // Сбрасываем поворот и масштаб
         this.state.rotation = 0;
-        this.canvas.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
+        this.state.scale = 1;
+        this.canvas.style.transform = '';
+        this.canvas.style.transformOrigin = '';
 
         // Перезагружаем исходное изображение без раскраски
         if (this.state.userData.selectedTest) {
@@ -884,6 +895,13 @@ App.clearColoring = function () {
         // Сохраняем начальное состояние
         this.saveState();
 
+        // Обновляем отображение масштаба и угла
+        const zoomLevel = document.getElementById('zoomLevel');
+        if (zoomLevel) zoomLevel.textContent = '100%';
+
+        const rotationAngle = document.getElementById('rotationAngle');
+        if (rotationAngle) rotationAngle.textContent = '0°';
+
         console.log('Раскраска очищена');
     }
 };
@@ -891,34 +909,68 @@ App.clearColoring = function () {
 // Поворот canvas с использованием CSS классов
 App.rotateCanvas = function () {
     console.log('Поворот на:', this.state.rotation, 'градусов');
-    
+
     // Сохраняем текущее состояние перед поворотом
     this.saveState();
-    
-    // Применяем класс поворота к canvas
-    this.canvas.className = 'border border-gray-200 rounded-lg shadow-lg w-full h-auto';
-    
-    // Удаляем все классы поворота
-    this.canvas.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
-    
-    // Добавляем соответствующий класс в зависимости от угла
+
+    // Строим трансформацию с учетом текущего масштаба
+    let transform = '';
+
+    // Добавляем поворот
     if (this.state.rotation === 90) {
-        this.canvas.classList.add('rotate-90');
+        transform = 'rotate(90deg) ';
     } else if (this.state.rotation === 180) {
-        this.canvas.classList.add('rotate-180');
+        transform = 'rotate(180deg) ';
     } else if (this.state.rotation === 270) {
-        this.canvas.classList.add('rotate-270');
+        transform = 'rotate(270deg) ';
     }
-    
+
+    // Добавляем масштабирование
+    transform += `scale(${this.state.scale})`;
+
+    // Применяем трансформацию
+    this.canvas.style.transform = transform;
+    this.canvas.style.transformOrigin = 'center center';
+
     // Обновляем отображение угла
     const rotationAngle = document.getElementById('rotationAngle');
     if (rotationAngle) rotationAngle.textContent = this.state.rotation + '°';
-    
-    console.log('Поворот завершен, класс применен:', this.state.rotation);
+
+    console.log('Поворот завершен, применена трансформация:', transform);
 };
 
 // Масштабирование canvas
 App.applyZoom = function () {
-    // Здесь можно реализовать масштабирование canvas
     console.log('Масштаб:', this.state.scale);
+
+    // Сохраняем текущее состояние перед масштабированием
+    this.saveState();
+
+    // Применяем масштабирование через CSS трансформацию
+    // Сначала сбрасываем предыдущие трансформации масштаба, но сохраняем поворот
+    let transform = '';
+
+    // Добавляем поворот, если он есть
+    if (this.state.rotation === 90) {
+        transform = 'rotate(90deg) ';
+    } else if (this.state.rotation === 180) {
+        transform = 'rotate(180deg) ';
+    } else if (this.state.rotation === 270) {
+        transform = 'rotate(270deg) ';
+    }
+
+    // Добавляем масштабирование
+    transform += `scale(${this.state.scale})`;
+
+    // Применяем трансформацию
+    this.canvas.style.transform = transform;
+    this.canvas.style.transformOrigin = 'center center';
+
+    // Обновляем отображение масштаба
+    const zoomLevel = document.getElementById('zoomLevel');
+    if (zoomLevel) {
+        zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
+    }
+
+    console.log('Масштабирование применено:', this.state.scale);
 };
