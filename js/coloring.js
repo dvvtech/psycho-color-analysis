@@ -1,3 +1,5 @@
+const BACKGROUND_COLOR = '#EDEDED';
+
 // Инициализация страницы раскраски
 App.initColoringPage = function () {
     console.log('Инициализация страницы раскраски');
@@ -53,6 +55,10 @@ App.setupCanvas = function () {
     // Настройка рисования
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
+
+    // Устанавливаем серый фон по умолчанию
+    this.ctx.fillStyle = BACKGROUND_COLOR;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Добавляем обработчик для изменения размера окна
     window.addEventListener('resize', this.handleResize.bind(this));
@@ -304,7 +310,7 @@ App.loadImageFromFile = function (image) {
 
 // Рисование изображения на canvas
 App.drawImageOnCanvas = function (img) {
-    this.ctx.fillStyle = '#ffffff';
+    this.ctx.fillStyle = BACKGROUND_COLOR;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Вычисляем масштабирование для заполнения canvas по высоте
@@ -318,7 +324,7 @@ App.drawImageOnCanvas = function (img) {
 
     // Если изображение слишком узкое, заполняем фон по бокам белым
     if (offsetX > 0) {
-        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillStyle = BACKGROUND_COLOR;
         this.ctx.fillRect(0, 0, offsetX, this.canvas.height);
         this.ctx.fillRect(offsetX + drawWidth, 0, this.canvas.width - (offsetX + drawWidth), this.canvas.height);
     }
@@ -326,18 +332,18 @@ App.drawImageOnCanvas = function (img) {
 
 // Рисование заглушки
 App.drawPlaceholderImage = function () {
-    this.ctx.fillStyle = '#f9fafb';
+    this.ctx.fillStyle = BACKGROUND_COLOR;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.ctx.font = 'bold 40px Arial';
-    this.ctx.fillStyle = '#d1d5db';
+    this.ctx.fillStyle = '#9ca3af';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('Изображение', this.canvas.width / 2, this.canvas.height / 2 - 30);
+    this.ctx.fillText('Изображение не выбрано', this.canvas.width / 2, this.canvas.height / 2 - 30);
 
     this.ctx.font = '20px Arial';
-    this.ctx.fillStyle = '#9ca3af';
-    this.ctx.fillText('Не удалось загрузить', this.canvas.width / 2, this.canvas.height / 2 + 30);
+    this.ctx.fillStyle = '#6b7280';
+    this.ctx.fillText('Вернитесь на страницу настроек', this.canvas.width / 2, this.canvas.height / 2 + 30);
 };
 
 // Сохранение состояния
@@ -410,10 +416,16 @@ App.calculateStatistics = function () {
         const b = data[i + 2];
         const a = data[i + 3];
 
+        // Пропускаем полностью прозрачные пиксели
         if (a < 100) continue;
-        if (r > 250 && g > 250 && b > 250) continue;
 
         const hex = this.rgbToHex(r, g, b);
+
+        // Игнорируем фоновый цвет
+        if (hex.toLowerCase() === BACKGROUND_COLOR.toLowerCase()) {
+            continue;
+        }
+
         const colorName = this.findColorName(hex);
 
         if (colorName) {
@@ -425,7 +437,7 @@ App.calculateStatistics = function () {
             }
             this.state.colorUsage[colorName].count++;
             totalUserPixels++;
-        }
+        } 
     }
 
     for (const color in this.state.colorUsage) {
@@ -875,6 +887,10 @@ App.clearColoring = function () {
         this.state.scale = 1;
         this.canvas.style.transform = '';
         this.canvas.style.transformOrigin = '';
+
+        // Очищаем canvas и устанавливаем фоновый цвет
+        this.ctx.fillStyle = BACKGROUND_COLOR;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Перезагружаем исходное изображение без раскраски
         if (this.state.userData.selectedTest) {
