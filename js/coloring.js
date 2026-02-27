@@ -46,7 +46,7 @@ App.initColoringPage = function () {
     this.state.isHandActive = false; // Сбрасываем режим руки
     this.state.panOffsetX = 0; // Сбрасываем смещение
     this.state.panOffsetY = 0;
-
+    
     this.updateUndoRedoButtons();
     this.updateHandButtonState();
 
@@ -889,7 +889,7 @@ App.clearColoring = function () {
     // Подтверждение действия
     if (confirm('Очистить раскраску? Все изменения будут потеряны.')) {
 
-        // Сбрасываем поворот и масштаб
+        // Сбрасываем поворот, масштаб и смещение
         this.state.rotation = 0;
         this.state.scale = 1;
         this.state.panOffsetX = 0;
