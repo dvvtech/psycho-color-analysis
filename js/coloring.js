@@ -455,17 +455,33 @@ App.calculateStatistics = function () {
             }
             this.state.colorUsage[colorName].count++;
             totalUserPixels++;
+        } 
+    }
+
+    // Фильтруем цвета с количеством пикселей меньше 10
+    const MIN_PIXEL_COUNT = 10;
+    let filteredTotalPixels = 0;
+    const filteredColorUsage = {};
+
+    for (const color in this.state.colorUsage) {
+        if (this.state.colorUsage[color].count >= MIN_PIXEL_COUNT) {
+            filteredColorUsage[color] = this.state.colorUsage[color];
+            filteredTotalPixels += this.state.colorUsage[color].count;
         }
     }
 
+    // Заменяем state.colorUsage на отфильтрованный
+    this.state.colorUsage = filteredColorUsage;
+
+    // Пересчитываем проценты для оставшихся цветов
     for (const color in this.state.colorUsage) {
-        this.state.colorUsage[color].percentage = totalUserPixels > 0
-            ? Math.round((this.state.colorUsage[color].count / totalUserPixels) * 100)
+        this.state.colorUsage[color].percentage = filteredTotalPixels > 0
+            ? Math.round((this.state.colorUsage[color].count / filteredTotalPixels) * 100)
             : 0;
     }
 
-    this.displayStatistics(totalUserPixels);
-    return totalUserPixels;
+    this.displayStatistics(filteredTotalPixels);
+    return filteredTotalPixels;
 };
 
 // Конвертация RGB в HEX
