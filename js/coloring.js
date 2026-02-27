@@ -34,17 +34,20 @@ App.initColoringPage = function () {
 
     this.setupCanvas();
     this.initColorPalette();
-    this.initHandButton(); // Инициализируем кнопку руки
-    this.setupPanningEvents(); // Настраиваем события для перемещения (теперь включает и рисование)
+    this.initHandButton();
+    this.setupPanningEvents();
     this.loadSelectedImage();
     this.setupColoringEventListeners();
 
     this.state.undoStack = [];
     this.state.redoStack = [];
-    this.state.colorUsage = {}; // Сбрасываем статистику
-    this.state.isHandActive = false; // Сбрасываем режим руки
-    this.state.panOffsetX = 0; // Сбрасываем смещение
+    this.state.colorUsage = {};
+    this.state.isHandActive = false;
+    this.state.panOffsetX = 0;
     this.state.panOffsetY = 0;
+    
+    // Устанавливаем курсор по умолчанию
+    this.canvas.style.cursor = 'default';
     
     this.updateUndoRedoButtons();
     this.updateHandButtonState();
@@ -982,19 +985,19 @@ App.initHandButton = function () {
 // Переключение режима руки
 App.toggleHandMode = function () {
     this.state.isHandActive = !this.state.isHandActive;
-
+    
     // Если выключаем режим руки, сбрасываем состояние перемещения
     if (!this.state.isHandActive) {
         this.state.isPanning = false;
     }
-
+    
     // Меняем стиль курсора
     if (this.state.isHandActive) {
         this.canvas.style.cursor = 'grab';
     } else {
-        this.canvas.style.cursor = 'crosshair';
+        this.canvas.style.cursor = 'default'; // Изменено с 'crosshair' на 'default'
     }
-
+    
     this.updateHandButtonState();
     console.log('Режим руки:', this.state.isHandActive ? 'включен' : 'выключен');
 };
@@ -1084,7 +1087,7 @@ App.pan = function (e) {
 App.stopPanning = function () {
     if (this.state.isPanning) {
         this.state.isPanning = false;
-        this.canvas.style.cursor = this.state.isHandActive ? 'grab' : 'crosshair';
+        this.canvas.style.cursor = this.state.isHandActive ? 'grab' : 'default'; // Изменено здесь
     }
 };
 
