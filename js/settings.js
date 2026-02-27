@@ -53,8 +53,7 @@ App.loadSavedData = function() {
     }
 };
 
-// Инициализация выбора изображений
-// Инициализация выбора изображений
+// Инициализация выбора изображений с ленивой загрузкой
 App.initImageSelector = function() {
     const imageSelector = document.getElementById('image-selector');
     if (!imageSelector) {
@@ -64,12 +63,15 @@ App.initImageSelector = function() {
 
     imageSelector.innerHTML = '';
     
-    this.config.images.forEach(image => {
+    this.config.images.forEach((image, index) => {
         const imgElement = document.createElement('div');
         imgElement.className = 'image-item border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-400 transition duration-200 relative';
         imgElement.dataset.imageId = image.id;
         imgElement.innerHTML = `
-            <div class="h-48 bg-gray-100 flex items-center justify-center image-preview" data-filename="${image.filename}">
+            <div class="h-48 bg-gray-100 flex items-center justify-center image-preview" 
+                 data-filename="${image.filename}" 
+                 data-thumbnail="${image.thumbnail}"
+                 data-index="${index}">
                 <i class="fas fa-spinner fa-spin text-gray-400"></i>
             </div>
             <div class="p-2 text-center text-sm font-medium text-gray-700 border-t border-gray-200">
@@ -77,7 +79,26 @@ App.initImageSelector = function() {
             </div>
         `;
         
-        this.loadImagePreview(image.filename, imgElement.querySelector('.image-preview'));
+        // Добавляем ленивую загрузку
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const preview = entry.target;
+                        const thumbnail = preview.dataset.thumbnail;
+                        this.loadImagePreview(thumbnail, preview, true);
+                        observer.unobserve(preview);
+                    }
+                });
+            }, { rootMargin: '50px' });
+            
+            observer.observe(imgElement.querySelector('.image-preview'));
+        } else {
+            // Fallback для старых браузеров
+            setTimeout(() => {
+                this.loadImagePreview(image.thumbnail, imgElement.querySelector('.image-preview'), true);
+            }, index * 100);
+        }
         
         imgElement.addEventListener('click', () => {
             document.querySelectorAll('.image-item').forEach(item => {
@@ -100,7 +121,7 @@ App.initImageSelector = function() {
 };
 
 // Загрузка превью изображения
-App.loadImagePreview = function(filename, container) {
+App.loadImagePreview = function(filename, container, isThumbnail = false) {
     const img = new Image();
     img.onload = function() {
         container.style.backgroundImage = `url('${filename}')`;
@@ -108,13 +129,29 @@ App.loadImagePreview = function(filename, container) {
         container.style.backgroundPosition = 'center';
         container.style.backgroundRepeat = 'no-repeat';
         container.innerHTML = '';
+        
+        // Добавляем небольшую анимацию появления
+        container.style.opacity = '0';
+        container.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+            container.style.opacity = '1';
+        }, 10);
     };
     img.onerror = function() {
-        container.innerHTML = `
-            <div class="text-center text-gray-400">
-                <i class="fas fa-image text-4xl"></i>
-            </div>
-        `;
+        // Если не удалось загрузить превью, пробуем загрузить оригинал
+        if (!isThumbnail) {
+            container.innerHTML = `
+                <div class="text-center text-gray-400">
+                    <i class="fas fa-image text-4xl"></i>
+                </div>
+            `;
+        } else {
+            // Пробуем загрузить оригинал
+            const originalFilename = container.dataset.filename;
+            if (originalFilename) {
+                App.loadImagePreview(originalFilename, container, false);
+            }
+        }
     };
     img.src = filename;
 };
