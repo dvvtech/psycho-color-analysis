@@ -717,17 +717,14 @@ App.hideResults = function () {
 };
 
 // Настройка обработчиков событий
-// Настройка обработчиков событий
 App.setupColoringEventListeners = function () {
     console.log('Настройка обработчиков событий');
 
     // Кнопка Главная
     const homeBtn = document.getElementById('homeBtn');
     if (homeBtn) {
-        // Удаляем все старые обработчики
         homeBtn.replaceWith(homeBtn.cloneNode(true));
         const newHomeBtn = document.getElementById('homeBtn');
-
         newHomeBtn.addEventListener('click', () => {
             console.log('Нажата кнопка Главная');
             this.resetColoringState();
@@ -736,13 +733,11 @@ App.setupColoringEventListeners = function () {
     }
 
     // Поворот
-    // Поворот
     const rotateLeft = document.getElementById('rotateLeft');
     if (rotateLeft) {
         rotateLeft.replaceWith(rotateLeft.cloneNode(true));
         const newRotateLeft = document.getElementById('rotateLeft');
         newRotateLeft.addEventListener('click', () => {
-            // Вычисляем новый угол поворота (обеспечиваем значения 0, 90, 180, 270)
             this.state.rotation = (this.state.rotation - 90 + 360) % 360;
             this.rotateCanvas();
         });
@@ -753,7 +748,6 @@ App.setupColoringEventListeners = function () {
         rotateRight.replaceWith(rotateRight.cloneNode(true));
         const newRotateRight = document.getElementById('rotateRight');
         newRotateRight.addEventListener('click', () => {
-            // Вычисляем новый угол поворота (обеспечиваем значения 0, 90, 180, 270)
             this.state.rotation = (this.state.rotation + 90) % 360;
             this.rotateCanvas();
         });
@@ -767,8 +761,6 @@ App.setupColoringEventListeners = function () {
         newZoomIn.addEventListener('click', () => {
             this.state.scale = Math.min(this.state.scale + 0.1, 2);
             this.applyZoom();
-            const zoomLevel = document.getElementById('zoomLevel');
-            if (zoomLevel) zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
         });
     }
 
@@ -779,8 +771,6 @@ App.setupColoringEventListeners = function () {
         newZoomOut.addEventListener('click', () => {
             this.state.scale = Math.max(this.state.scale - 0.1, 0.5);
             this.applyZoom();
-            const zoomLevel = document.getElementById('zoomLevel');
-            if (zoomLevel) zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
         });
     }
 
@@ -811,6 +801,18 @@ App.setupColoringEventListeners = function () {
         newRedoBtn.addEventListener('click', this.redo.bind(this));
     }
 
+    // Кнопка Центрирования - НОВАЯ
+    const centerBtn = document.getElementById('centerBtn');
+    if (centerBtn) {
+        centerBtn.replaceWith(centerBtn.cloneNode(true));
+        const newCenterBtn = document.getElementById('centerBtn');
+        newCenterBtn.addEventListener('click', () => {
+            console.log('Нажата кнопка центрирования');
+            this.centerImage(); // Используем версию без сброса поворота
+            // или this.centerImageWithRotation() если нужно сбрасывать поворот
+        });
+    }
+
     // Рассчитать
     const calculateBtn = document.getElementById('calculateBtn');
     if (calculateBtn) {
@@ -821,14 +823,11 @@ App.setupColoringEventListeners = function () {
         });
     }
 
-    // Кнопка Очистить - ИСПРАВЛЕНО
+    // Кнопка Очистить
     const clearBtn = document.getElementById('clearBtn');
     if (clearBtn) {
-        // Полностью заменяем кнопку, чтобы удалить все старые обработчики
         clearBtn.replaceWith(clearBtn.cloneNode(true));
         const newClearBtn = document.getElementById('clearBtn');
-
-        // Добавляем новый обработчик
         newClearBtn.addEventListener('click', () => {
             console.log('Нажата кнопка Очистить');
             this.clearColoring();
@@ -897,14 +896,9 @@ App.clearColoring = function () {
     // Подтверждение действия
     if (confirm('Очистить раскраску? Все изменения будут потеряны.')) {
 
-        // Сбрасываем поворот, масштаб и смещение
-        this.state.rotation = 0;
-        this.state.scale = 1;
-        this.state.panOffsetX = 0;
-        this.state.panOffsetY = 0;
-        this.canvas.style.transform = '';
-        this.canvas.style.transformOrigin = '';
-
+        // Сначала центрируем изображение
+        this.centerImage(); // или this.centerImageWithRotation()
+        
         // Очищаем canvas и устанавливаем фоновый цвет
         this.ctx.fillStyle = BACKGROUND_COLOR;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -927,13 +921,6 @@ App.clearColoring = function () {
 
         // Сохраняем начальное состояние
         this.saveState();
-
-        // Обновляем отображение масштаба и угла
-        const zoomLevel = document.getElementById('zoomLevel');
-        if (zoomLevel) zoomLevel.textContent = '100%';
-
-        const rotationAngle = document.getElementById('rotationAngle');
-        if (rotationAngle) rotationAngle.textContent = '0°';
 
         console.log('Раскраска очищена');
     }
@@ -1205,4 +1192,66 @@ App.setupPanningEvents = function () {
     this.canvas.addEventListener('touchstart', this.touchStartHandler);
     this.canvas.addEventListener('touchmove', this.touchMoveHandler);
     this.canvas.addEventListener('touchend', this.touchEndHandler);
+};
+
+// Центрирование изображения (сброс позиции и масштаба)
+App.centerImage = function () {
+    console.log('Центрирование изображения');
+
+    // Сбрасываем масштаб на 1 (100%)
+    this.state.scale = 1;
+    
+    // Сбрасываем смещение
+    this.state.panOffsetX = 0;
+    this.state.panOffsetY = 0;
+    
+    // Сохраняем текущий поворот (не сбрасываем его)
+    // Применяем трансформации с новыми значениями
+    this.applyTransformations();
+    
+    // Обновляем отображение масштаба
+    const zoomLevel = document.getElementById('zoomLevel');
+    if (zoomLevel) {
+        zoomLevel.textContent = '100%';
+    }
+    
+    // Сохраняем состояние для Undo/Redo
+    this.saveState();
+    
+    console.log('Изображение отцентрировано, масштаб: 100%');
+};
+
+// Альтернативная версия, которая также сбрасывает поворот (если нужно)
+App.centerImageWithRotation = function () {
+    console.log('Центрирование изображения (с поворотом)');
+
+    // Сбрасываем масштаб на 1 (100%)
+    this.state.scale = 1;
+    
+    // Сбрасываем поворот на 0
+    this.state.rotation = 0;
+    
+    // Сбрасываем смещение
+    this.state.panOffsetX = 0;
+    this.state.panOffsetY = 0;
+    
+    // Применяем трансформации с новыми значениями
+    this.applyTransformations();
+    
+    // Обновляем отображение масштаба
+    const zoomLevel = document.getElementById('zoomLevel');
+    if (zoomLevel) {
+        zoomLevel.textContent = '100%';
+    }
+    
+    // Обновляем отображение угла
+    const rotationAngle = document.getElementById('rotationAngle');
+    if (rotationAngle) {
+        rotationAngle.textContent = '0°';
+    }
+    
+    // Сохраняем состояние для Undo/Redo
+    this.saveState();
+    
+    console.log('Изображение отцентрировано, масштаб: 100%, поворот: 0°');
 };

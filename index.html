@@ -205,7 +205,7 @@
             grid-template-columns: repeat(6, minmax(0, 1fr));
             gap: 0.5rem;
         }
-        
+
 
         /* Стили для поворота canvas */
         .rotate-90 {
@@ -233,6 +233,39 @@
 
         #testCanvas {
             transition: transform 0.3s ease;
+        }
+
+        /* Стили для кнопки центрирования */
+        #centerBtn {
+            transition: all 0.2s ease;
+        }
+
+        #centerBtn:hover {
+            background-color: #e5e5e5;
+            transform: scale(1.05);
+        }
+
+        #centerBtn:active {
+            transform: scale(0.95);
+        }
+
+        /* Анимация при нажатии */
+        @keyframes centerPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #centerBtn:active i {
+            animation: centerPulse 0.3s ease;
         }
     </style>
 </head>
