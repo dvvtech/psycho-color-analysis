@@ -46,7 +46,15 @@ const App = {
         lastY: 0,
         undoStack: [],
         redoStack: [],
-        colorUsage: {}
+        colorUsage: {},
+
+        // Новые состояния для перемещения
+        isHandActive: false,      // Активен ли режим руки
+        isPanning: false,         // Идет ли перемещение
+        panStartX: 0,             // Начальная координата X при перемещении
+        panStartY: 0,             // Начальная координата Y при перемещении
+        panOffsetX: 0,            // Текущее смещение X
+        panOffsetY: 0             // Текущее смещение Y
     },
 
     // Метод для загрузки компонентов

@@ -34,14 +34,21 @@ App.initColoringPage = function () {
 
     this.setupCanvas();
     this.initColorPalette();
-    this.setupDrawingTools();
+    this.initHandButton(); // Инициализируем кнопку руки
+    this.setupPanningEvents(); // Настраиваем события для перемещения
+    this.setupDrawingTools(); // Настраиваем инструменты рисования
     this.loadSelectedImage();
     this.setupColoringEventListeners();
 
     this.state.undoStack = [];
     this.state.redoStack = [];
     this.state.colorUsage = {}; // Сбрасываем статистику
+    this.state.isHandActive = false; // Сбрасываем режим руки
+    this.state.panOffsetX = 0; // Сбрасываем смещение
+    this.state.panOffsetY = 0;
+
     this.updateUndoRedoButtons();
+    this.updateHandButtonState();
 
     console.log('Страница раскраски инициализирована');
 };
@@ -437,7 +444,7 @@ App.calculateStatistics = function () {
             }
             this.state.colorUsage[colorName].count++;
             totalUserPixels++;
-        } 
+        }
     }
 
     for (const color in this.state.colorUsage) {
@@ -885,6 +892,8 @@ App.clearColoring = function () {
         // Сбрасываем поворот и масштаб
         this.state.rotation = 0;
         this.state.scale = 1;
+        this.state.panOffsetX = 0;
+        this.state.panOffsetY = 0;
         this.canvas.style.transform = '';
         this.canvas.style.transformOrigin = '';
 
@@ -929,30 +938,14 @@ App.rotateCanvas = function () {
     // Сохраняем текущее состояние перед поворотом
     this.saveState();
 
-    // Строим трансформацию с учетом текущего масштаба
-    let transform = '';
-
-    // Добавляем поворот
-    if (this.state.rotation === 90) {
-        transform = 'rotate(90deg) ';
-    } else if (this.state.rotation === 180) {
-        transform = 'rotate(180deg) ';
-    } else if (this.state.rotation === 270) {
-        transform = 'rotate(270deg) ';
-    }
-
-    // Добавляем масштабирование
-    transform += `scale(${this.state.scale})`;
-
-    // Применяем трансформацию
-    this.canvas.style.transform = transform;
-    this.canvas.style.transformOrigin = 'center center';
+    // Применяем все трансформации
+    this.applyTransformations();
 
     // Обновляем отображение угла
     const rotationAngle = document.getElementById('rotationAngle');
     if (rotationAngle) rotationAngle.textContent = this.state.rotation + '°';
 
-    console.log('Поворот завершен, применена трансформация:', transform);
+    console.log('Поворот завершен');
 };
 
 // Масштабирование canvas
@@ -962,17 +955,152 @@ App.applyZoom = function () {
     // Сохраняем текущее состояние перед масштабированием
     this.saveState();
 
-    // Применяем масштабирование через CSS трансформацию
-    // Сначала сбрасываем предыдущие трансформации масштаба, но сохраняем поворот
+    // Применяем все трансформации
+    this.applyTransformations();
+
+    // Обновляем отображение масштаба
+    const zoomLevel = document.getElementById('zoomLevel');
+    if (zoomLevel) {
+        zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
+    }
+
+    console.log('Масштабирование применено');
+};
+
+// Инициализация кнопки руки
+App.initHandButton = function () {
+    const handBtn = document.getElementById('handBtn');
+    if (!handBtn) return;
+
+    // Удаляем старые обработчики
+    handBtn.replaceWith(handBtn.cloneNode(true));
+    const newHandBtn = document.getElementById('handBtn');
+
+    newHandBtn.addEventListener('click', () => {
+        this.toggleHandMode();
+    });
+
+    // Устанавливаем начальное состояние
+    this.updateHandButtonState();
+};
+
+// Переключение режима руки
+App.toggleHandMode = function () {
+    this.state.isHandActive = !this.state.isHandActive;
+
+    // Меняем стиль курсора
+    if (this.state.isHandActive) {
+        this.canvas.style.cursor = 'grab';
+    } else {
+        this.canvas.style.cursor = 'crosshair';
+    }
+
+    this.updateHandButtonState();
+    console.log('Режим руки:', this.state.isHandActive ? 'включен' : 'выключен');
+};
+
+// Обновление состояния кнопки руки
+App.updateHandButtonState = function () {
+    const handBtn = document.getElementById('handBtn');
+    if (!handBtn) return;
+
+    if (this.state.isHandActive) {
+        handBtn.classList.add('bg-blue-500', 'text-white');
+        handBtn.classList.remove('bg-gray-100', 'text-gray-700');
+        handBtn.title = 'Режим перемещения (вкл)';
+    } else {
+        handBtn.classList.remove('bg-blue-500', 'text-white');
+        handBtn.classList.add('bg-gray-100', 'text-gray-700');
+        handBtn.title = 'Режим перемещения (выкл)';
+    }
+};
+
+// Начало перемещения
+App.startPanning = function (e) {
+    if (!this.state.isHandActive) return false;
+
+    e.preventDefault();
+    this.state.isPanning = true;
+
+    const rect = this.canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+
+    this.state.panStartX = clientX - rect.left;
+    this.state.panStartY = clientY - rect.top;
+
+    this.canvas.style.cursor = 'grabbing';
+
+    return true;
+};
+
+// Процесс перемещения
+App.pan = function (e) {
+    if (!this.state.isHandActive || !this.state.isPanning) return false;
+
+    e.preventDefault();
+
+    const rect = this.canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+
+    const currentX = clientX - rect.left;
+    const currentY = clientY - rect.top;
+
+    // Вычисляем смещение
+    const deltaX = currentX - this.state.panStartX;
+    const deltaY = currentY - this.state.panStartY;
+
+    // Обновляем смещение
+    this.state.panOffsetX += deltaX;
+    this.state.panOffsetY += deltaY;
+
+    // Обновляем начальные координаты для следующего шага
+    this.state.panStartX = currentX;
+    this.state.panStartY = currentY;
+
+    // Применяем трансформацию с учетом поворота, масштаба и смещения
+    this.applyTransformations();
+
+    return true;
+};
+
+// Остановка перемещения
+App.stopPanning = function () {
+    if (this.state.isPanning) {
+        this.state.isPanning = false;
+        this.canvas.style.cursor = this.state.isHandActive ? 'grab' : 'crosshair';
+    }
+};
+
+// Применение всех трансформаций (поворот, масштаб, смещение)
+App.applyTransformations = function () {
     let transform = '';
 
-    // Добавляем поворот, если он есть
+    // Добавляем смещение
+    transform += `translate(${this.state.panOffsetX}px, ${this.state.panOffsetY}px) `;
+
+    // Добавляем поворот
     if (this.state.rotation === 90) {
-        transform = 'rotate(90deg) ';
+        transform += 'rotate(90deg) ';
     } else if (this.state.rotation === 180) {
-        transform = 'rotate(180deg) ';
+        transform += 'rotate(180deg) ';
     } else if (this.state.rotation === 270) {
-        transform = 'rotate(270deg) ';
+        transform += 'rotate(270deg) ';
     }
 
     // Добавляем масштабирование
@@ -981,12 +1109,50 @@ App.applyZoom = function () {
     // Применяем трансформацию
     this.canvas.style.transform = transform;
     this.canvas.style.transformOrigin = 'center center';
+};
 
-    // Обновляем отображение масштаба
-    const zoomLevel = document.getElementById('zoomLevel');
-    if (zoomLevel) {
-        zoomLevel.textContent = `${Math.round(this.state.scale * 100)}%`;
-    }
+// Обновление обработчиков событий для поддержки перемещения
+App.setupPanningEvents = function () {
+    // Добавляем обработчики для перемещения
+    this.canvas.addEventListener('mousedown', (e) => {
+        if (!this.startPanning(e)) {
+            // Если не в режиме руки, запускаем рисование
+            this.startDrawing(e);
+        }
+    });
 
-    console.log('Масштабирование применено:', this.state.scale);
+    this.canvas.addEventListener('mousemove', (e) => {
+        if (!this.pan(e)) {
+            // Если не в режиме руки, рисуем
+            this.draw(e);
+        }
+    });
+
+    this.canvas.addEventListener('mouseup', () => {
+        this.stopPanning();
+        this.stopDrawing();
+    });
+
+    this.canvas.addEventListener('mouseleave', () => {
+        this.stopPanning();
+        this.stopDrawing();
+    });
+
+    // Для touch устройств
+    this.canvas.addEventListener('touchstart', (e) => {
+        if (!this.startPanning(e)) {
+            this.startDrawing(e);
+        }
+    });
+
+    this.canvas.addEventListener('touchmove', (e) => {
+        if (!this.pan(e)) {
+            this.draw(e);
+        }
+    });
+
+    this.canvas.addEventListener('touchend', () => {
+        this.stopPanning();
+        this.stopDrawing();
+    });
 };
