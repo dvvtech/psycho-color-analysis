@@ -35,8 +35,7 @@ App.initColoringPage = function () {
     this.setupCanvas();
     this.initColorPalette();
     this.initHandButton(); // Инициализируем кнопку руки
-    this.setupPanningEvents(); // Настраиваем события для перемещения
-    this.setupDrawingTools(); // Настраиваем инструменты рисования
+    this.setupPanningEvents(); // Настраиваем события для перемещения (теперь включает и рисование)
     this.loadSelectedImage();
     this.setupColoringEventListeners();
 
@@ -163,6 +162,11 @@ App.setupDrawingTools = function () {
 
 // Начало рисования
 App.startDrawing = function (e) {
+    // Если активен режим руки, не рисуем
+    if (this.state.isHandActive) {
+        return;
+    }
+
     e.preventDefault();
     this.state.isDrawing = true;
     const pos = this.getCanvasCoordinates(e);
@@ -180,8 +184,12 @@ App.startDrawing = function (e) {
 
 // Рисование
 App.draw = function (e) {
+    // Если активен режим руки или не рисуем, выходим
+    if (this.state.isHandActive || !this.state.isDrawing) {
+        return;
+    }
+
     e.preventDefault();
-    if (!this.state.isDrawing) return;
 
     const pos = this.getCanvasCoordinates(e);
     const x = pos.x;
@@ -988,6 +996,11 @@ App.initHandButton = function () {
 App.toggleHandMode = function () {
     this.state.isHandActive = !this.state.isHandActive;
 
+    // Если выключаем режим руки, сбрасываем состояние перемещения
+    if (!this.state.isHandActive) {
+        this.state.isPanning = false;
+    }
+
     // Меняем стиль курсора
     if (this.state.isHandActive) {
         this.canvas.style.cursor = 'grab';
@@ -1021,7 +1034,7 @@ App.startPanning = function (e) {
 
     e.preventDefault();
     this.state.isPanning = true;
-
+    
     const rect = this.canvas.getBoundingClientRect();
     let clientX, clientY;
 
@@ -1035,9 +1048,10 @@ App.startPanning = function (e) {
 
     this.state.panStartX = clientX - rect.left;
     this.state.panStartY = clientY - rect.top;
-
+    
     this.canvas.style.cursor = 'grabbing';
-
+    
+    console.log('Начало перемещения');
     return true;
 };
 
@@ -1113,46 +1127,82 @@ App.applyTransformations = function () {
 
 // Обновление обработчиков событий для поддержки перемещения
 App.setupPanningEvents = function () {
-    // Добавляем обработчики для перемещения
-    this.canvas.addEventListener('mousedown', (e) => {
-        if (!this.startPanning(e)) {
-            // Если не в режиме руки, запускаем рисование
+    // Удаляем старые обработчики, чтобы избежать дублирования
+    this.canvas.removeEventListener('mousedown', this.mouseDownHandler);
+    this.canvas.removeEventListener('mousemove', this.mouseMoveHandler);
+    this.canvas.removeEventListener('mouseup', this.mouseUpHandler);
+    this.canvas.removeEventListener('mouseleave', this.mouseLeaveHandler);
+    this.canvas.removeEventListener('touchstart', this.touchStartHandler);
+    this.canvas.removeEventListener('touchmove', this.touchMoveHandler);
+    this.canvas.removeEventListener('touchend', this.touchEndHandler);
+
+    // Создаем обработчики
+    this.mouseDownHandler = (e) => {
+        if (this.state.isHandActive) {
+            this.startPanning(e);
+        } else {
             this.startDrawing(e);
         }
-    });
+    };
 
-    this.canvas.addEventListener('mousemove', (e) => {
-        if (!this.pan(e)) {
-            // Если не в режиме руки, рисуем
+    this.mouseMoveHandler = (e) => {
+        if (this.state.isHandActive) {
+            if (this.state.isPanning) {
+                this.pan(e);
+            }
+        } else {
             this.draw(e);
         }
-    });
+    };
 
-    this.canvas.addEventListener('mouseup', () => {
-        this.stopPanning();
-        this.stopDrawing();
-    });
+    this.mouseUpHandler = () => {
+        if (this.state.isHandActive) {
+            this.stopPanning();
+        } else {
+            this.stopDrawing();
+        }
+    };
 
-    this.canvas.addEventListener('mouseleave', () => {
-        this.stopPanning();
-        this.stopDrawing();
-    });
+    this.mouseLeaveHandler = () => {
+        if (this.state.isHandActive) {
+            this.stopPanning();
+        } else {
+            this.stopDrawing();
+        }
+    };
 
-    // Для touch устройств
-    this.canvas.addEventListener('touchstart', (e) => {
-        if (!this.startPanning(e)) {
+    this.touchStartHandler = (e) => {
+        if (this.state.isHandActive) {
+            this.startPanning(e);
+        } else {
             this.startDrawing(e);
         }
-    });
+    };
 
-    this.canvas.addEventListener('touchmove', (e) => {
-        if (!this.pan(e)) {
+    this.touchMoveHandler = (e) => {
+        if (this.state.isHandActive) {
+            if (this.state.isPanning) {
+                this.pan(e);
+            }
+        } else {
             this.draw(e);
         }
-    });
+    };
 
-    this.canvas.addEventListener('touchend', () => {
-        this.stopPanning();
-        this.stopDrawing();
-    });
+    this.touchEndHandler = () => {
+        if (this.state.isHandActive) {
+            this.stopPanning();
+        } else {
+            this.stopDrawing();
+        }
+    };
+
+    // Добавляем новые обработчики
+    this.canvas.addEventListener('mousedown', this.mouseDownHandler);
+    this.canvas.addEventListener('mousemove', this.mouseMoveHandler);
+    this.canvas.addEventListener('mouseup', this.mouseUpHandler);
+    this.canvas.addEventListener('mouseleave', this.mouseLeaveHandler);
+    this.canvas.addEventListener('touchstart', this.touchStartHandler);
+    this.canvas.addEventListener('touchmove', this.touchMoveHandler);
+    this.canvas.addEventListener('touchend', this.touchEndHandler);
 };
