@@ -626,7 +626,7 @@ App.sendAnalysisRequest = async function () {
     this.hideError();
 
     try {
-        const response = await fetch('https://api.cloud-platform.pro/mpp-tests/v1/color-analysis/analyze-lusher', {
+        const response = await fetch('https://api.cloud-platform.pro/mpp-tests/v1/color-analysis/analyze-lusher-test', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
