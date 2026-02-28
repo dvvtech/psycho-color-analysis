@@ -1444,9 +1444,10 @@ App.sendResultsToEmail = async function (email) {
 
     } catch (error) {
         console.error('Ошибка при отправке на почту:', error);
+        this.hideEmailSending();
         this.showEmailError('Ошибка при отправке. Пожалуйста, попробуйте позже.');
     } finally {
-        this.hideEmailSending();
+        //this.hideEmailSending();
     }
 };
 
