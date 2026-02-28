@@ -1388,10 +1388,19 @@ App.sendResultsToEmail = async function (email) {
     console.log('Отправка результатов на email:', email);
 
     // Показываем индикатор отправки
-    console.log('Пытаемся показать индикатор отправки');
-    this.showEmailSending();
+    console.log('Пытаемся показать индикатор отправки');    
     this.hideEmailError();
     this.hideEmailSuccess();
+
+    this.showEmailSending();
+
+    // Немного прокручиваем вниз, чтобы индикатор был виден
+    setTimeout(() => {
+        window.scrollBy({
+            top: 150,
+            behavior: 'smooth'
+        });
+    }, 100);
 
     try {
         
