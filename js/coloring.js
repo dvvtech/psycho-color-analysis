@@ -817,10 +817,29 @@ App.disableButtons = function (disable) {
 
 // Показать ошибку
 App.showError = function (message) {
+    console.log('showError вызван с сообщением:', message);
+    
+    // Показываем ошибку в панели результатов
     const errorElement = document.getElementById('error');
     if (errorElement) {
         errorElement.textContent = message;
-        errorElement.style.display = 'block';
+        errorElement.classList.remove('hidden');
+        
+        // Убеждаемся, что панель результатов видима
+        const resultsPanel = document.querySelector('.results-panel');
+        if (resultsPanel) {
+            resultsPanel.classList.remove('hidden');
+        }
+        
+        // Автоматически скрываем ошибку через 5 секунд
+        setTimeout(() => {
+            errorElement.classList.add('hidden');
+        }, 5000);
+    } else {
+        console.error('Элемент error не найден');
+        
+        // Создаем временное уведомление, если элемент не найден
+        //this.showNotification(message, 'error');
     }
 };
 
