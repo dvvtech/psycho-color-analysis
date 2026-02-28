@@ -1421,20 +1421,8 @@ App.sendResultsToEmail = async function (email) {
 
         // Отправляем запрос к сервису
         const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send', {
-            method: 'POST',
-            //body: formData
-            // Если ваш сервис ожидает JSON, используйте этот код:            
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: email,
-                image: imageData,
-                stats: stats,
-                results: results,
-                userData: userData
-            })
-            
+            method: 'POST',                        
+            body: formData            
         });
 
         if (!response.ok) {
