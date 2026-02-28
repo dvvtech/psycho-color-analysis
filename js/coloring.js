@@ -755,7 +755,7 @@ App.showLoading = function (message = 'Загрузка теста...') {
         }
         
         // Блокируем кнопки
-        this.disableButtons(true);
+        //this.disableButtons(true);
     }
     console.log('Показан индикатор загрузки:', message);
 };
