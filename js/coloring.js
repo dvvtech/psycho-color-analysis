@@ -287,7 +287,7 @@ App.loadSelectedImage = function () {
     }
 
     // Сбрасываем UI после загрузки изображения
-    this.resetColoringUI();
+    //this.resetColoringUI();
 };
 
 // Загрузка изображения из файла
