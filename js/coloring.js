@@ -1416,7 +1416,7 @@ App.sendResultsToEmail = async function (email) {
         formData.append('email', email);
         //formData.append('image', this.dataURLToBlob(imageData), 'coloring.png');
         //formData.append('stats', JSON.stringify(stats));
-        //formData.append('results', JSON.stringify(results));
+        formData.append('results', JSON.stringify(results));
         formData.append('userData', JSON.stringify(userData));
 
         // Отправляем запрос к сервису
