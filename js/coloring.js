@@ -1414,13 +1414,13 @@ App.sendResultsToEmail = async function (email) {
         // Формируем данные для отправки
         const formData = new FormData();
         formData.append('email', email);
-        formData.append('image', this.dataURLToBlob(imageData), 'coloring.png');
-        formData.append('stats', JSON.stringify(stats));
-        formData.append('results', JSON.stringify(results));
-        formData.append('userData', JSON.stringify(userData));
+        //formData.append('image', this.dataURLToBlob(imageData), 'coloring.png');
+        //formData.append('stats', JSON.stringify(stats));
+        //formData.append('results', JSON.stringify(results));
+        //formData.append('userData', JSON.stringify(userData));
 
         // Отправляем запрос к сервису
-        const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send', {
+        const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send2', {
             method: 'POST',                        
             body: formData            
         });
