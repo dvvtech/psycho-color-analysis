@@ -1393,8 +1393,11 @@ App.sendResultsToEmail = async function (email) {
     this.hideEmailSuccess();
 
     try {
+        
         // Получаем данные для отправки
-        const imageData = this.canvas.toDataURL('image/png'); // Получаем изображение в формате PNG
+        const rotatedImageData = await this.getRotatedImageData();
+        //const imageData = this.canvas.toDataURL('image/png'); // Получаем изображение в формате PNG
+        
         const stats = this.state.colorUsage;
         const results = {
             mainCharacteristic: document.getElementById('mainCharacteristic')?.textContent,
@@ -1414,7 +1417,7 @@ App.sendResultsToEmail = async function (email) {
         // Формируем данные для отправки
         const formData = new FormData();
         formData.append('email', email);
-        formData.append('image', this.dataURLToBlob(imageData), 'coloring.png');
+        formData.append('image', rotatedImageData, 'coloring.png');
         formData.append('stats', JSON.stringify(stats));
         formData.append('results', JSON.stringify(results));
         formData.append('userData', JSON.stringify(userData));
@@ -1439,6 +1442,34 @@ App.sendResultsToEmail = async function (email) {
     } finally {
         this.hideEmailSending();
     }
+};
+
+// Упрощенная версия без учета смещения
+App.getRotatedImageData = function () {
+    return new Promise((resolve) => {
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Устанавливаем размеры с учетом поворота
+        if (this.state.rotation === 90 || this.state.rotation === 270) {
+            tempCanvas.width = this.canvas.height;
+            tempCanvas.height = this.canvas.width;
+        } else {
+            tempCanvas.width = this.canvas.width;
+            tempCanvas.height = this.canvas.height;
+        }
+        
+        tempCtx.fillStyle = '#ffffff';
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        tempCtx.save();
+        tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+        tempCtx.rotate(this.state.rotation * Math.PI / 180);
+        tempCtx.drawImage(this.canvas, -this.canvas.width / 2, -this.canvas.height / 2);
+        tempCtx.restore();
+        
+        tempCanvas.toBlob(resolve, 'image/png', 1.0);
+    });
 };
 
 // Преобразование DataURL в Blob
