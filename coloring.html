@@ -10,6 +10,28 @@
             <p class="text-sm text-gray-400 mt-1">Пожалуйста, подождите</p>
         </div>
     </div>
+    <!-- Модальное окно для информационных сообщений -->
+    <div id="infoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+        style="backdrop-filter: blur(4px);">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all scale-100 opacity-100">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-blue-100 rounded-full mb-4">
+                    <i class="fas fa-info-circle text-3xl text-blue-500"></i>
+                </div>
+
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2" id="infoModalTitle">Информация</h3>
+
+                <p class="text-gray-600 text-center mb-6" id="infoModalMessage"></p>
+
+                <div class="flex gap-3">
+                    <button id="infoModalOkBtn"
+                        class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-check mr-2"></i>OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Модальное окно подтверждения очистки -->
     <div id="clearConfirmModal"
         class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
@@ -145,7 +167,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-5">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Результаты анализа</h3>
                     <div id="statsContainer" class="mb-4"></div>
-                    
+
                     <div id="error"
                         class="hidden bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg mb-3 text-sm">
                     </div>

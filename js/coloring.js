@@ -617,7 +617,10 @@ App.sendAnalysisRequest = async function () {
     const apiRequest = this.buildApiRequest();
 
     if (apiRequest.user_color.colors.length === 0) {
-        this.showError("Выберите хотя бы один цвет с ненулевым значением.");
+        await this.showInfoModal(
+            "Выберите хотя бы один цвет с ненулевым значением.", //Вы еще не использовали цвета для раскрашивания
+            "Предупреждение"
+        );
         return;
     }
 
@@ -815,38 +818,147 @@ App.disableButtons = function (disable) {
     });
 };
 
-// Показать ошибку
+// Показать информационное модальное окно
+App.showInfoModal = function (message, title = 'Информация') {
+    console.log('showInfoModal вызван с сообщением:', message);
+    
+    return new Promise((resolve) => {
+        const modal = document.getElementById('infoModal');
+        const titleElement = document.getElementById('infoModalTitle');
+        const messageElement = document.getElementById('infoModalMessage');
+        const okBtn = document.getElementById('infoModalOkBtn');
+        
+        if (!modal || !messageElement || !okBtn) {
+            console.error('Элементы infoModal не найдены');
+            resolve(false);
+            return;
+        }
+        
+        // Устанавливаем заголовок и сообщение
+        if (titleElement) {
+            titleElement.textContent = title;
+        }
+        messageElement.textContent = message;
+        
+        // Изменяем иконку в зависимости от типа сообщения
+        const iconElement = modal.querySelector('.fa-info-circle');
+        if (iconElement) {
+            if (title.includes('Ошибка') || title.includes('Error')) {
+                iconElement.className = 'fas fa-exclamation-circle text-3xl text-red-500';
+                iconElement.closest('.bg-blue-100').className = 'flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4';
+            } else if (title.includes('Предупреждение') || title.includes('Warning')) {
+                iconElement.className = 'fas fa-exclamation-triangle text-3xl text-yellow-500';
+                iconElement.closest('.bg-blue-100').className = 'flex items-center justify-center w-16 h-16 mx-auto bg-yellow-100 rounded-full mb-4';
+            } else {
+                iconElement.className = 'fas fa-info-circle text-3xl text-blue-500';
+                iconElement.closest('.bg-blue-100').className = 'flex items-center justify-center w-16 h-16 mx-auto bg-blue-100 rounded-full mb-4';
+            }
+        }
+        
+        // Показываем модальное окно
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Блокируем взаимодействие с canvas
+        if (this.canvas) {
+            this.canvas.style.pointerEvents = 'none';
+        }
+        
+        // Функция закрытия
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            
+            // Разблокируем взаимодействие с canvas
+            if (this.canvas) {
+                this.canvas.style.pointerEvents = 'auto';
+            }
+            
+            // Удаляем обработчики
+            okBtn.removeEventListener('click', onOk);
+            modal.removeEventListener('click', onOutsideClick);
+            document.removeEventListener('keydown', onEscape);
+            
+            resolve(true);
+        };
+        
+        // Обработчик нажатия OK
+        const onOk = () => {
+            closeModal();
+        };
+        
+        // Обработчик клика вне окна
+        const onOutsideClick = (e) => {
+            if (e.target === modal) {
+                // Не закрываем при клике вне окна, только по OK
+                // Можно раскомментировать, если нужно закрывать по клику вне
+                // closeModal();
+            }
+        };
+        
+        // Обработчик Escape
+        const onEscape = (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        };
+        
+        // Назначаем обработчики
+        okBtn.addEventListener('click', onOk);
+        modal.addEventListener('click', onOutsideClick);
+        document.addEventListener('keydown', onEscape);
+    });
+};
+
+// Обновляем метод showError для использования модального окна
 App.showError = function (message) {
     console.log('showError вызван с сообщением:', message);
-
-    // Показываем ошибку в панели результатов
+    
+    // Используем модальное окно для ошибок
+    this.showInfoModal(message, 'Ошибка');
+    
+    // Также показываем в панели результатов для обратной совместимости
     const errorElement = document.getElementById('error');
     if (errorElement) {
         errorElement.textContent = message;
         errorElement.classList.remove('hidden');
-
+        
         // Убеждаемся, что панель результатов видима
         const resultsPanel = document.querySelector('.results-panel');
         if (resultsPanel) {
             resultsPanel.classList.remove('hidden');
         }
-
+        
         // Очищаем предыдущий таймер, если он был
         if (this.errorTimeout) {
             clearTimeout(this.errorTimeout);
         }
-
+        
         // Устанавливаем новый таймер для скрытия ошибки
         this.errorTimeout = setTimeout(() => {
-            // Проверяем, что элемент все еще существует и содержит то же сообщение
             if (errorElement && errorElement.textContent === message) {
                 errorElement.classList.add('hidden');
-                console.log('Ошибка скрыта по таймеру');
             }
             this.errorTimeout = null;
         }, 5000);
     }
 };
+
+// Метод для показа предупреждения
+App.showWarning = function (message) {
+    return this.showInfoModal(message, 'Предупреждение');
+};
+
+// Метод для показа успешного сообщения
+App.showSuccess = function (message) {
+    return this.showInfoModal(message, 'Успех');
+};
+
+// Метод для показа информации
+App.showInfo = function (message) {
+    return this.showInfoModal(message, 'Информация');
+};
+
 
 // Скрыть ошибку
 App.hideError = function () {
