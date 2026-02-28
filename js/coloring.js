@@ -50,10 +50,10 @@ App.initColoringPage = function () {
     this.state.isHandActive = false;
     this.state.panOffsetX = 0;
     this.state.panOffsetY = 0;
-    
+
     // Устанавливаем курсор по умолчанию
     this.canvas.style.cursor = 'default';
-    
+
     this.updateUndoRedoButtons();
     this.updateHandButtonState();
 
@@ -294,7 +294,7 @@ App.loadSelectedImage = function () {
 App.loadImageFromFile = function (image) {
     // Показываем индикатор загрузки
     this.showImageLoading();
-    
+
     const img = new Image();
     img.crossOrigin = "anonymous";
 
@@ -320,7 +320,7 @@ App.loadImageFromFile = function (image) {
         // Обновляем отображение угла
         const rotationAngle = document.getElementById('rotationAngle');
         if (rotationAngle) rotationAngle.textContent = '0°';
-        
+
         // Скрываем индикатор загрузки
         this.hideImageLoading();
     };
@@ -332,10 +332,10 @@ App.loadImageFromFile = function (image) {
         this.state.undoStack = [];
         this.state.redoStack = [];
         this.updateUndoRedoButtons();
-        
+
         // Скрываем индикатор загрузки даже при ошибке
         this.hideImageLoading();
-        
+
         // Показываем сообщение об ошибке
         this.showError('Не удалось загрузить изображение');
     };
@@ -379,7 +379,7 @@ App.drawPlaceholderImage = function () {
     this.ctx.font = '20px Arial';
     this.ctx.fillStyle = '#6b7280';
     this.ctx.fillText('Вернитесь на страницу настроек', this.canvas.width / 2, this.canvas.height / 2 + 30);
-    
+
     // Скрываем индикатор загрузки, если он вдруг еще висит
     this.hideImageLoading();
 };
@@ -475,7 +475,7 @@ App.calculateStatistics = function () {
             }
             this.state.colorUsage[colorName].count++;
             totalUserPixels++;
-        } 
+        }
     }
 
     // Фильтруем цвета с количеством пикселей меньше 10
@@ -720,6 +720,12 @@ App.displayResults = function (result) {
             this.restoreState(currentCanvasState);
         }, 10);
     }
+
+    // Сбрасываем email форму
+    this.hideEmailForm();
+    this.hideEmailError();
+    this.hideEmailSuccess();
+    this.hideEmailSending();
 };
 
 // Показать загрузку
@@ -872,6 +878,66 @@ App.setupColoringEventListeners = function () {
             this.clearColoring();
         });
     }
+
+    // Кнопка отправки на почту
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    if (sendEmailBtn) {
+        sendEmailBtn.replaceWith(sendEmailBtn.cloneNode(true));
+        const newSendEmailBtn = document.getElementById('sendEmailBtn');
+        newSendEmailBtn.addEventListener('click', () => {
+            console.log('Нажата кнопка отправки на почту');
+            this.showEmailForm();
+        });
+    }
+
+    // Кнопка подтверждения отправки
+    const confirmSendBtn = document.getElementById('confirmSendBtn');
+    if (confirmSendBtn) {
+        confirmSendBtn.replaceWith(confirmSendBtn.cloneNode(true));
+        const newConfirmSendBtn = document.getElementById('confirmSendBtn');
+        newConfirmSendBtn.addEventListener('click', () => {
+            const emailInput = document.getElementById('emailInput');
+            const email = emailInput.value.trim();
+
+            // Валидация
+            if (!email) {
+                this.showEmailError('Введите email');
+                return;
+            }
+
+            if (!this.validateEmail(email)) {
+                this.showEmailError('Введите корректный email');
+                return;
+            }
+
+            this.hideEmailError();
+            this.sendResultsToEmail(email);
+        });
+    }
+
+    // Кнопка отмены
+    const cancelSendBtn = document.getElementById('cancelSendBtn');
+    if (cancelSendBtn) {
+        cancelSendBtn.replaceWith(cancelSendBtn.cloneNode(true));
+        const newCancelSendBtn = document.getElementById('cancelSendBtn');
+        newCancelSendBtn.addEventListener('click', () => {
+            this.hideEmailForm();
+            this.hideEmailError();
+            this.hideEmailSuccess();
+        });
+    }
+
+    // Enter в поле email
+    const emailInput = document.getElementById('emailInput');
+    if (emailInput) {
+        emailInput.replaceWith(emailInput.cloneNode(true));
+        const newEmailInput = document.getElementById('emailInput');
+        newEmailInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('confirmSendBtn')?.click();
+            }
+        });
+    }
 };
 
 // Сброс UI страницы раскраски
@@ -937,7 +1003,7 @@ App.clearColoring = function () {
 
         // Сначала центрируем изображение
         this.centerImage(); // или this.centerImageWithRotation()
-        
+
         // Очищаем canvas и устанавливаем фоновый цвет
         this.ctx.fillStyle = BACKGROUND_COLOR;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -1021,19 +1087,19 @@ App.initHandButton = function () {
 // Переключение режима руки
 App.toggleHandMode = function () {
     this.state.isHandActive = !this.state.isHandActive;
-    
+
     // Если выключаем режим руки, сбрасываем состояние перемещения
     if (!this.state.isHandActive) {
         this.state.isPanning = false;
     }
-    
+
     // Меняем стиль курсора
     if (this.state.isHandActive) {
         this.canvas.style.cursor = 'grab';
     } else {
         this.canvas.style.cursor = 'default'; // Изменено с 'crosshair' на 'default'
     }
-    
+
     this.updateHandButtonState();
     console.log('Режим руки:', this.state.isHandActive ? 'включен' : 'выключен');
 };
@@ -1060,7 +1126,7 @@ App.startPanning = function (e) {
 
     e.preventDefault();
     this.state.isPanning = true;
-    
+
     const rect = this.canvas.getBoundingClientRect();
     let clientX, clientY;
 
@@ -1074,9 +1140,9 @@ App.startPanning = function (e) {
 
     this.state.panStartX = clientX - rect.left;
     this.state.panStartY = clientY - rect.top;
-    
+
     this.canvas.style.cursor = 'grabbing';
-    
+
     console.log('Начало перемещения');
     return true;
 };
@@ -1239,24 +1305,24 @@ App.centerImage = function () {
 
     // Сбрасываем масштаб на 1 (100%)
     this.state.scale = 1;
-    
+
     // Сбрасываем смещение
     this.state.panOffsetX = 0;
     this.state.panOffsetY = 0;
-    
+
     // Сохраняем текущий поворот (не сбрасываем его)
     // Применяем трансформации с новыми значениями
     this.applyTransformations();
-    
+
     // Обновляем отображение масштаба
     const zoomLevel = document.getElementById('zoomLevel');
     if (zoomLevel) {
         zoomLevel.textContent = '100%';
     }
-    
+
     // Сохраняем состояние для Undo/Redo
     this.saveState();
-    
+
     console.log('Изображение отцентрировано, масштаб: 100%');
 };
 
@@ -1266,32 +1332,32 @@ App.centerImageWithRotation = function () {
 
     // Сбрасываем масштаб на 1 (100%)
     this.state.scale = 1;
-    
+
     // Сбрасываем поворот на 0
     this.state.rotation = 0;
-    
+
     // Сбрасываем смещение
     this.state.panOffsetX = 0;
     this.state.panOffsetY = 0;
-    
+
     // Применяем трансформации с новыми значениями
     this.applyTransformations();
-    
+
     // Обновляем отображение масштаба
     const zoomLevel = document.getElementById('zoomLevel');
     if (zoomLevel) {
         zoomLevel.textContent = '100%';
     }
-    
+
     // Обновляем отображение угла
     const rotationAngle = document.getElementById('rotationAngle');
     if (rotationAngle) {
         rotationAngle.textContent = '0°';
     }
-    
+
     // Сохраняем состояние для Undo/Redo
     this.saveState();
-    
+
     console.log('Изображение отцентрировано, масштаб: 100%, поворот: 0°');
 };
 
@@ -1315,4 +1381,175 @@ App.hideImageLoading = function () {
         this.canvas.style.pointerEvents = 'auto';
     }
     console.log('Скрыт индикатор загрузки');
+};
+
+// Отправка результатов на почту
+App.sendResultsToEmail = async function (email) {
+    console.log('Отправка результатов на email:', email);
+
+    // Показываем индикатор отправки
+    this.showEmailSending();
+    this.hideEmailError();
+    this.hideEmailSuccess();
+
+    try {
+        // Получаем данные для отправки
+        const imageData = this.canvas.toDataURL('image/png'); // Получаем изображение в формате PNG
+        const stats = this.state.colorUsage;
+        const results = {
+            mainCharacteristic: document.getElementById('mainCharacteristic')?.textContent,
+            strengths: this.getStrengthsList(),
+            recommendations: this.getRecommendationsList()
+        };
+
+        // Данные пользователя
+        const userData = {
+            gender: this.state.userData.gender === 'male' ? 'Мужской' : 'Женский',
+            birthDate: this.state.userData.birthDate,
+            age: this.state.userData.birthDate ? Math.floor((new Date() - new Date(this.state.userData.birthDate)) / (365.25 * 24 * 60 * 60 * 1000)) : 0,
+            zodiacSign: this.getZodiacSign(this.state.userData.birthDate),
+            selectedTest: this.state.userData.selectedTest?.name || 'Не выбран'
+        };
+
+        // Формируем данные для отправки
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('image', this.dataURLToBlob(imageData), 'coloring.png');
+        formData.append('stats', JSON.stringify(stats));
+        formData.append('results', JSON.stringify(results));
+        formData.append('userData', JSON.stringify(userData));
+
+        // Отправляем запрос к сервису
+        const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send', {
+            method: 'POST',
+            //body: formData
+            // Если ваш сервис ожидает JSON, используйте этот код:            
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                image: imageData,
+                stats: stats,
+                results: results,
+                userData: userData
+            })
+            
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        this.showEmailSuccess('Результаты успешно отправлены на почту!');
+        console.log('Результаты отправлены:', result);
+
+    } catch (error) {
+        console.error('Ошибка при отправке на почту:', error);
+        this.showEmailError('Ошибка при отправке. Пожалуйста, попробуйте позже.');
+    } finally {
+        this.hideEmailSending();
+    }
+};
+
+// Преобразование DataURL в Blob
+App.dataURLToBlob = function (dataURL) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+};
+
+// Получение списка сильных сторон
+App.getStrengthsList = function () {
+    const list = [];
+    const items = document.querySelectorAll('#strengthsList li');
+    items.forEach(item => list.push(item.textContent));
+    return list;
+};
+
+// Получение списка рекомендаций
+App.getRecommendationsList = function () {
+    const list = [];
+    const items = document.querySelectorAll('#recommendationsList li');
+    items.forEach(item => list.push(item.textContent));
+    return list;
+};
+
+// Показать форму email
+App.showEmailForm = function () {
+    const emailForm = document.getElementById('emailForm');
+    const sendBtn = document.getElementById('sendEmailBtn');
+    if (emailForm && sendBtn) {
+        emailForm.classList.remove('hidden');
+        sendBtn.classList.add('hidden');
+        document.getElementById('emailInput')?.focus();
+    }
+};
+
+// Скрыть форму email
+App.hideEmailForm = function () {
+    const emailForm = document.getElementById('emailForm');
+    const sendBtn = document.getElementById('sendEmailBtn');
+    if (emailForm && sendBtn) {
+        emailForm.classList.add('hidden');
+        sendBtn.classList.remove('hidden');
+        document.getElementById('emailInput').value = '';
+    }
+};
+
+// Показать индикатор отправки
+App.showEmailSending = function () {
+    const sending = document.getElementById('emailSending');
+    if (sending) sending.classList.remove('hidden');
+};
+
+// Скрыть индикатор отправки
+App.hideEmailSending = function () {
+    const sending = document.getElementById('emailSending');
+    if (sending) sending.classList.add('hidden');
+};
+
+// Показать ошибку email
+App.showEmailError = function (message) {
+    const error = document.getElementById('emailError');
+    if (error) {
+        error.textContent = message;
+        error.classList.remove('hidden');
+    }
+};
+
+// Скрыть ошибку email
+App.hideEmailError = function () {
+    const error = document.getElementById('emailError');
+    if (error) error.classList.add('hidden');
+};
+
+// Показать успех отправки
+App.showEmailSuccess = function (message) {
+    const success = document.getElementById('emailSuccess');
+    if (success) {
+        success.textContent = message;
+        success.classList.remove('hidden');
+
+        // Скрываем форму
+        this.hideEmailForm();
+
+        // Автоматически скрываем сообщение через 5 секунд
+        setTimeout(() => {
+            success.classList.add('hidden');
+        }, 5000);
+    }
+};
+
+// Валидация email
+App.validateEmail = function (email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
 };

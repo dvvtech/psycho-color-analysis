@@ -420,6 +420,88 @@
         .canvas-container {
             position: relative;
         }
+
+        /* Стили для email формы */
+        #emailForm {
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #emailInput {
+            transition: border-color 0.2s ease;
+        }
+
+        #emailInput:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        #emailError {
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        #emailSuccess {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Стили для кнопки отправки */
+        #sendEmailBtn {
+            transition: all 0.2s ease;
+        }
+
+        #sendEmailBtn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        #sendEmailBtn:active {
+            transform: translateY(0);
+        }
+
+        /* Индикатор отправки */
+        #emailSending {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
     </style>
 </head>
 
