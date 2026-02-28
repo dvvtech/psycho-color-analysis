@@ -1414,7 +1414,7 @@ App.sendResultsToEmail = async function (email) {
         // Формируем данные для отправки
         const formData = new FormData();
         formData.append('email', email);
-        //formData.append('image', this.dataURLToBlob(imageData), 'coloring.png');
+        formData.append('image', this.dataURLToBlob(imageData), 'coloring.png');
         //formData.append('stats', JSON.stringify(stats));
         formData.append('results', JSON.stringify(results));
         formData.append('userData', JSON.stringify(userData));
