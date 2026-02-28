@@ -618,7 +618,7 @@ App.sendAnalysisRequest = async function () {
 
     if (apiRequest.user_color.colors.length === 0) {
         await this.showInfoModal(
-            "Выберите хотя бы один цвет с ненулевым значением.", //Вы еще не использовали цвета для раскрашивания
+            "Вы еще не использовали цвета для раскрашивания.", //
             "Предупреждение"
         );
         return;
