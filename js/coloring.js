@@ -1394,14 +1394,6 @@ App.sendResultsToEmail = async function (email) {
 
     this.showEmailSending();
 
-    // Немного прокручиваем вниз, чтобы индикатор был виден
-    setTimeout(() => {
-        window.scrollBy({
-            top: 150,
-            behavior: 'smooth'
-        });
-    }, 100);
-
     try {
         
         // Получаем данные для отправки

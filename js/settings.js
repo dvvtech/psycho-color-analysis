@@ -160,6 +160,7 @@ App.loadImagePreview = function(filename, container, isThumbnail = false) {
 App.setupSettingsEventListeners = function() {
     const nextBtn = document.getElementById('nextBtn');
     if (nextBtn) {
+        
         // Удаляем старый обработчик, если есть
         if (this.nextBtnHandler) {
             nextBtn.removeEventListener('click', this.nextBtnHandler);
@@ -178,17 +179,17 @@ App.setupSettingsEventListeners = function() {
             
             // Валидация
             if (!gender) {
-                alert('Пожалуйста, выберите пол');
+                this.showError1('Пожалуйста, выберите пол');
                 return;
             }
             
             if (!birthDate) {
-                alert('Пожалуйста, укажите дату рождения');
+                this.showErro1r('Пожалуйста, укажите дату рождения');
                 return;
             }
             
             if (!this.state.userData.selectedTest) {
-                alert('Пожалуйста, выберите тест');
+                this.showError1('Пожалуйста, выберите тест');
                 return;
             }
             
@@ -216,4 +217,113 @@ App.clearFormData = function() {
     };
     this.saveToLocalStorage();
     this.loadSavedData(); // Обновляем форму
+};
+
+// Показать уведомление об ошибке
+App.showError1 = function (message) {
+    this.showNotification1(message, 'error');
+};
+
+// Показать уведомление об успехе
+App.showSuccess1 = function (message) {
+    this.showNotification1(message, 'success');
+};
+
+// Показать уведомление с предупреждением
+App.showWarning1 = function (message) {
+    this.showNotification1(message, 'warning');
+};
+
+// Показать информационное уведомление
+App.showInfo1 = function (message) {
+    this.showNotification1(message, 'info');
+};
+
+// Основной метод показа уведомлений
+App.showNotification1 = function (message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
+
+    // Создаем уникальный ID для уведомления
+    const notificationId = 'notification_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    // Определяем стили в зависимости от типа
+    let bgColor, borderColor, iconColor, icon;
+    
+    switch (type) {
+        case 'error':
+            bgColor = 'bg-red-50';
+            borderColor = 'border-red-400';
+            iconColor = 'text-red-500';
+            icon = 'fa-exclamation-circle';
+            break;
+        case 'success':
+            bgColor = 'bg-green-50';
+            borderColor = 'border-green-400';
+            iconColor = 'text-green-500';
+            icon = 'fa-check-circle';
+            break;
+        case 'warning':
+            bgColor = 'bg-yellow-50';
+            borderColor = 'border-yellow-400';
+            iconColor = 'text-yellow-500';
+            icon = 'fa-exclamation-triangle';
+            break;
+        default: // info
+            bgColor = 'bg-blue-50';
+            borderColor = 'border-blue-400';
+            iconColor = 'text-blue-500';
+            icon = 'fa-info-circle';
+    }
+
+    // Создаем HTML уведомления
+    const notificationHtml = `
+        <div id="${notificationId}" class="${bgColor} border-l-4 ${borderColor} rounded-lg shadow-lg p-4 mb-2 transform transition-all duration-500 ease-in-out translate-x-full opacity-0 hover:shadow-xl">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas ${icon} ${iconColor} text-xl"></i>
+                </div>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm text-gray-700">${message}</p>
+                </div>
+                <div class="ml-4 flex-shrink-0">
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Прогресс-бар для автоматического скрытия -->
+            <div class="absolute bottom-0 left-0 h-1 bg-${type === 'error' ? 'red' : type === 'success' ? 'green' : type === 'warning' ? 'yellow' : 'blue'}-400 rounded-b-lg" style="width: 100%; transition: width 3s linear;" id="progress_${notificationId}"></div>
+        </div>
+    `;
+
+    // Добавляем уведомление в контейнер
+    container.insertAdjacentHTML('beforeend', notificationHtml);
+
+    // Получаем созданный элемент
+    const notification = document.getElementById(notificationId);
+    
+    // Анимация появления
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full', 'opacity-0');
+        notification.classList.add('translate-x-0', 'opacity-100');
+    }, 10);
+
+    // Анимация прогресс-бара
+    const progressBar = document.getElementById(`progress_${notificationId}`);
+    if (progressBar) {
+        setTimeout(() => {
+            progressBar.style.width = '0%';
+        }, 50);
+    }
+
+    // Автоматическое скрытие через 3 секунды
+    setTimeout(() => {
+        notification.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 500);
+    }, 3000);
 };

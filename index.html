@@ -502,6 +502,65 @@
                 opacity: 0.7;
             }
         }
+
+        /* Стили для уведомлений */
+        #notificationContainer {
+            pointer-events: none;
+            max-width: 320px;
+        }
+
+        #notificationContainer>div {
+            pointer-events: auto;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Анимации для уведомлений */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Прогресс-бар */
+        .notification-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 3s linear;
+        }
+
+        /* Для мобильных устройств */
+        @media (max-width: 640px) {
+            #notificationContainer {
+                width: calc(100% - 2rem);
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 
