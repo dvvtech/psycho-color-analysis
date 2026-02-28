@@ -157,18 +157,20 @@ App.loadImagePreview = function(filename, container, isThumbnail = false) {
 };
 
 // Настройка обработчиков событий
-App.setupSettingsEventListeners = function() {
+App.setupSettingsEventListeners = function () {
+    console.log('Настройка обработчиков событий для страницы настроек');
+
+    // Кнопка Далее
     const nextBtn = document.getElementById('nextBtn');
     if (nextBtn) {
-        
-        // Удаляем старый обработчик, если есть
-        if (this.nextBtnHandler) {
-            nextBtn.removeEventListener('click', this.nextBtnHandler);
-        }
-        
-        // Добавляем новый
-        this.nextBtnHandler = (e) => {
+        // Удаляем все старые обработчики
+        nextBtn.replaceWith(nextBtn.cloneNode(true));
+        const newNextBtn = document.getElementById('nextBtn');
+
+        newNextBtn.addEventListener('click', (e) => {
             e.preventDefault(); // Предотвращаем возможное обновление страницы
+            
+            console.log('Нажата кнопка Далее');
             
             // Собираем данные
             const genderElement = document.querySelector('input[name="gender"]:checked');
@@ -184,7 +186,7 @@ App.setupSettingsEventListeners = function() {
             }
             
             if (!birthDate) {
-                this.showErro1r('Пожалуйста, укажите дату рождения');
+                this.showError1('Пожалуйста, укажите дату рождения');
                 return;
             }
             
@@ -202,9 +204,20 @@ App.setupSettingsEventListeners = function() {
             
             // Переходим на страницу раскраски
             this.showPage('coloring');
-        };
+        });
+    }
+
+    // Кнопка очистки (если есть)
+    const clearBtn = document.getElementById('clearBtn');
+    if (clearBtn) {
+        clearBtn.replaceWith(clearBtn.cloneNode(true));
+        const newClearBtn = document.getElementById('clearBtn');
         
-        nextBtn.addEventListener('click', this.nextBtnHandler.bind(this));
+        newClearBtn.addEventListener('click', () => {
+            if (confirm('Очистить все введенные данные?')) {
+                this.clearFormData();
+            }
+        });
     }
 };
 
