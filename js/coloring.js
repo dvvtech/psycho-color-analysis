@@ -1553,3 +1553,10 @@ App.validateEmail = function (email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
 };
+
+App.hideEmailSuccess = function () {
+    const success = document.getElementById('emailSuccess');
+    if (success) {
+        success.classList.add('hidden');
+    }
+};
