@@ -1388,6 +1388,7 @@ App.sendResultsToEmail = async function (email) {
     console.log('Отправка результатов на email:', email);
 
     // Показываем индикатор отправки
+    console.log('Пытаемся показать индикатор отправки');
     this.showEmailSending();
     this.hideEmailError();
     this.hideEmailSuccess();
@@ -1395,8 +1396,9 @@ App.sendResultsToEmail = async function (email) {
     try {
         
         // Получаем данные для отправки
+        console.log('Получение повернутого изображения...');
         const rotatedImageData = await this.getRotatedImageData();
-        //const imageData = this.canvas.toDataURL('image/png'); // Получаем изображение в формате PNG
+        console.log('Изображение получено, размер:', rotatedImageData.size, 'байт');
         
         const stats = this.state.colorUsage;
         const results = {
@@ -1422,11 +1424,15 @@ App.sendResultsToEmail = async function (email) {
         formData.append('results', JSON.stringify(results));
         formData.append('userData', JSON.stringify(userData));
 
+        console.log('Отправка запроса к серверу...');
+
         // Отправляем запрос к сервису
         const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send2', {
             method: 'POST',                        
             body: formData            
         });
+
+        console.log('Ответ получен, статус:', response.status);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -1472,19 +1478,6 @@ App.getRotatedImageData = function () {
     });
 };
 
-// Преобразование DataURL в Blob
-App.dataURLToBlob = function (dataURL) {
-    const arr = dataURL.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], { type: mime });
-};
-
 // Получение списка сильных сторон
 App.getStrengthsList = function () {
     const list = [];
@@ -1525,14 +1518,30 @@ App.hideEmailForm = function () {
 
 // Показать индикатор отправки
 App.showEmailSending = function () {
+    console.log('showEmailSending вызван');
     const sending = document.getElementById('emailSending');
-    if (sending) sending.classList.remove('hidden');
+    if (sending) {
+        console.log('Элемент emailSending найден, показываем');
+        sending.classList.remove('hidden');
+        // Проверяем видимость после изменения
+        console.log('Классы элемента после удаления hidden:', sending.className);
+    } else {
+        console.error('Элемент emailSending НЕ НАЙДЕН в DOM');
+        // Выведем весь DOM для отладки
+        console.log('Доступные элементы:', document.getElementById('results')?.innerHTML);
+    }
 };
 
 // Скрыть индикатор отправки
 App.hideEmailSending = function () {
+    console.log('hideEmailSending вызван');
     const sending = document.getElementById('emailSending');
-    if (sending) sending.classList.add('hidden');
+    if (sending) {
+        console.log('Элемент emailSending найден, скрываем');
+        sending.classList.add('hidden');
+    } else {
+        console.error('Элемент emailSending НЕ НАЙДЕН в DOM');
+    }
 };
 
 // Показать ошибку email
