@@ -995,11 +995,14 @@ App.resetColoringUI = function () {
 };
 
 // Очистка раскраски и закрытие результатов
-App.clearColoring = function () {
+App.clearColoring = async function () {
     console.log('Очистка раскраски');
 
+    // Подтверждение действия через модальное окно
+    const confirmed = await this.showClearConfirmModal();
+    
     // Подтверждение действия
-    if (confirm('Очистить раскраску? Все изменения будут потеряны.')) {
+    if (confirmed) {
 
         // Сначала центрируем изображение
         this.centerImage(); // или this.centerImageWithRotation()
@@ -1586,4 +1589,92 @@ App.hideEmailSuccess = function () {
     if (success) {
         success.classList.add('hidden');
     }
+};
+
+// Показать модальное окно подтверждения очистки
+// Метод, который показывает модальное окно и возвращает Promise
+App.showClearConfirmModal = function () {
+    console.log('Показ модального окна подтверждения');
+    
+    return new Promise((resolve) => {
+        const modal = document.getElementById('clearConfirmModal');
+        if (!modal) {
+            resolve(false);
+            return;
+        }
+        
+        // Показываем модальное окно
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Функции для обработки выбора
+        const onConfirm = () => {
+            cleanup();
+            resolve(true);
+        };
+        
+        const onCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+        
+        // Очистка обработчиков
+        const cleanup = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            
+            confirmBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', onCancel);
+            modal.removeEventListener('click', onOutsideClick);
+            document.removeEventListener('keydown', onEscape);
+        };
+        
+        // Обработчик клика вне окна
+        const onOutsideClick = (e) => {
+            if (e.target === modal) {
+                onCancel();
+            }
+        };
+        
+        // Обработчик Escape
+        const onEscape = (e) => {
+            if (e.key === 'Escape') {
+                onCancel();
+            }
+        };
+        
+        // Получаем кнопки
+        const confirmBtn = document.getElementById('confirmClearBtn');
+        const cancelBtn = document.getElementById('cancelClearBtn');
+        
+        // Назначаем обработчики
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+        modal.addEventListener('click', onOutsideClick);
+        document.addEventListener('keydown', onEscape);
+    });
+};
+
+// Скрыть модальное окно подтверждения очистки
+App.hideClearConfirmModal = function () {
+    console.log('Скрытие модального окна подтверждения');
+    const modal = document.getElementById('clearConfirmModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        // Восстанавливаем прокрутку страницы
+        document.body.style.overflow = '';
+    }
+};
+
+// Обработчик подтверждения очистки
+App.handleConfirmClear = function () {
+    console.log('Подтверждение очистки');
+    this.hideClearConfirmModal();
+    this.performClearColoring();
+};
+
+// Обработчик отмены очистки
+App.handleCancelClear = function () {
+    console.log('Отмена очистки');
+    this.hideClearConfirmModal();
 };
