@@ -293,7 +293,7 @@ App.loadSelectedImage = function () {
 // Загрузка изображения из файла
 App.loadImageFromFile = function (image) {
     // Показываем индикатор загрузки
-    this.showImageLoading();
+    this.showLoading('Загрузка теста...');
 
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -322,7 +322,7 @@ App.loadImageFromFile = function (image) {
         if (rotationAngle) rotationAngle.textContent = '0°';
 
         // Скрываем индикатор загрузки
-        this.hideImageLoading();
+        this.hideLoading();
     };
 
     img.onerror = () => {
@@ -334,7 +334,7 @@ App.loadImageFromFile = function (image) {
         this.updateUndoRedoButtons();
 
         // Скрываем индикатор загрузки даже при ошибке
-        this.hideImageLoading();
+        this.hideLoading();
 
         // Показываем сообщение об ошибке
         this.showError('Не удалось загрузить изображение');
@@ -621,7 +621,15 @@ App.sendAnalysisRequest = async function () {
         return;
     }
 
-    this.showLoading();
+    // Показываем загрузку с сообщением об анализе
+    this.showLoading('Анализ данных...');
+
+    // Скрываем старый индикатор, если он есть
+    const oldLoading = document.getElementById('loading');
+    if (oldLoading) {
+        oldLoading.classList.add('hidden');
+    }
+
     this.hideResults();
     this.hideError();
 
@@ -728,56 +736,52 @@ App.displayResults = function (result) {
     this.hideEmailSending();
 };
 
-// Показать загрузку
-App.showLoading = function () {
-    const loading = document.getElementById('loading');
-    if (loading) {
-        loading.classList.remove('hidden');
-        // Блокируем взаимодействие с кнопками (опционально)
+// Показать индикатор загрузки (общий метод)
+App.showLoading = function (message = 'Загрузка теста...') {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        // Обновляем текст сообщения
+        const mainText = overlay.querySelector('p:first-of-type');
+        const subText = overlay.querySelector('p.text-sm');
+        
+        if (mainText) mainText.textContent = message;
+        if (subText) subText.textContent = 'Пожалуйста, подождите';
+        
+        overlay.classList.remove('hidden');
+        
+        // Блокируем взаимодействие с canvas
+        if (this.canvas) {
+            this.canvas.style.pointerEvents = 'none';
+        }
+        
+        // Блокируем кнопки
         this.disableButtons(true);
-    } else {
-        console.error('Элемент loading не найден');
     }
-    
-    // Также показываем overlay для canvas, чтобы заблокировать взаимодействие
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        loadingOverlay.classList.remove('hidden');
-        // Меняем текст для индикации анализа, а не загрузки изображения
-        const overlayText = loadingOverlay.querySelector('p:first-of-type');
-        if (overlayText) {
-            overlayText.textContent = 'Анализ данных...';
-        }
-        const overlaySubtext = loadingOverlay.querySelector('p.text-sm');
-        if (overlaySubtext) {
-            overlaySubtext.textContent = 'Пожалуйста, подождите';
-        }
-    }
+    console.log('Показан индикатор загрузки:', message);
 };
 
-// Скрыть загрузку
+// Скрыть индикатор загрузки (общий метод)
 App.hideLoading = function () {
-    const loading = document.getElementById('loading');
-    if (loading) {
-        loading.classList.add('hidden');
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        
+        // Разблокируем взаимодействие с canvas
+        if (this.canvas) {
+            this.canvas.style.pointerEvents = 'auto';
+        }
+        
         // Разблокируем кнопки
         this.disableButtons(false);
+        
+        // Сбрасываем текст на значение по умолчанию
+        const mainText = overlay.querySelector('p:first-of-type');
+        const subText = overlay.querySelector('p.text-sm');
+        
+        if (mainText) mainText.textContent = 'Загрузка теста...';
+        if (subText) subText.textContent = 'Пожалуйста, подождите';
     }
-    
-    // Скрываем overlay
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        loadingOverlay.classList.add('hidden');
-        // Восстанавливаем текст для загрузки изображений
-        const overlayText = loadingOverlay.querySelector('p:first-of-type');
-        if (overlayText) {
-            overlayText.textContent = 'Загрузка теста...';
-        }
-        const overlaySubtext = loadingOverlay.querySelector('p.text-sm');
-        if (overlaySubtext) {
-            overlaySubtext.textContent = 'Пожалуйста, подождите';
-        }
-    }
+    console.log('Скрыт индикатор загрузки');
 };
 
 // Блокировка/разблокировка кнопок во время загрузки
@@ -1435,26 +1439,13 @@ App.centerImageWithRotation = function () {
     console.log('Изображение отцентрировано, масштаб: 100%, поворот: 0°');
 };
 
-// Показать индикатор загрузки
+// Для обратной совместимости
 App.showImageLoading = function () {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-        overlay.classList.remove('hidden');
-        // Блокируем взаимодействие с canvas
-        this.canvas.style.pointerEvents = 'none';
-    }
-    console.log('Показан индикатор загрузки');
+    this.showLoading('Загрузка теста...');
 };
 
-// Скрыть индикатор загрузки
 App.hideImageLoading = function () {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-        overlay.classList.add('hidden');
-        // Разблокируем взаимодействие с canvas
-        this.canvas.style.pointerEvents = 'auto';
-    }
-    console.log('Скрыт индикатор загрузки');
+    this.hideLoading();
 };
 
 // Отправка результатов на почту
