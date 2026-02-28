@@ -561,6 +561,41 @@
                 max-width: none;
             }
         }
+
+        /* Анимация для индикатора загрузки */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Стили для заблокированных кнопок */
+        button:disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Плавное появление индикатора */
+        #loading {
+            transition: opacity 0.3s ease;
+        }
+
+        #loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #loading:not(.hidden) {
+            opacity: 1;
+        }
     </style>
 </head>
 
