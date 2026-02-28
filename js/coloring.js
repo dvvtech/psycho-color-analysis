@@ -1443,11 +1443,10 @@ App.sendResultsToEmail = async function (email) {
         console.log('Результаты отправлены:', result);
 
     } catch (error) {
-        console.error('Ошибка при отправке на почту:', error);
-        this.hideEmailSending();
+        console.error('Ошибка при отправке на почту:', error);        
         this.showEmailError('Ошибка при отправке. Пожалуйста, попробуйте позже.');
     } finally {
-        //this.hideEmailSending();
+        this.hideEmailSending();
     }
 };
 
@@ -1518,27 +1517,19 @@ App.hideEmailForm = function () {
 };
 
 // Показать индикатор отправки
-App.showEmailSending = function () {
-    console.log('showEmailSending вызван');
+App.showEmailSending = function () {    
     const sending = document.getElementById('emailSending');
-    if (sending) {
-        console.log('Элемент emailSending найден, показываем');
-        sending.classList.remove('hidden');
-        // Проверяем видимость после изменения
-        console.log('Классы элемента после удаления hidden:', sending.className);
+    if (sending) {        
+        sending.classList.remove('hidden');        
     } else {
-        console.error('Элемент emailSending НЕ НАЙДЕН в DOM');
-        // Выведем весь DOM для отладки
-        console.log('Доступные элементы:', document.getElementById('results')?.innerHTML);
+        console.error('Элемент emailSending НЕ НАЙДЕН в DOM');        
     }
 };
 
 // Скрыть индикатор отправки
-App.hideEmailSending = function () {
-    console.log('hideEmailSending вызван');
+App.hideEmailSending = function () {    
     const sending = document.getElementById('emailSending');
-    if (sending) {
-        console.log('Элемент emailSending найден, скрываем');
+    if (sending) {        
         sending.classList.add('hidden');
     } else {
         console.error('Элемент emailSending НЕ НАЙДЕН в DOM');
@@ -1547,10 +1538,16 @@ App.hideEmailSending = function () {
 
 // Показать ошибку email
 App.showEmailError = function (message) {
+    console.log('showEmailError вызван с сообщением:', message);
     const error = document.getElementById('emailError');
     if (error) {
         error.textContent = message;
         error.classList.remove('hidden');
+        
+        // Автоматически скрываем ошибку через 5 секунд
+        setTimeout(() => {
+            error.classList.add('hidden');
+        }, 5000);
     }
 };
 
