@@ -743,17 +743,17 @@ App.showLoading = function (message = 'Загрузка теста...') {
         // Обновляем текст сообщения
         const mainText = overlay.querySelector('p:first-of-type');
         const subText = overlay.querySelector('p.text-sm');
-        
+
         if (mainText) mainText.textContent = message;
         if (subText) subText.textContent = 'Пожалуйста, подождите';
-        
+
         overlay.classList.remove('hidden');
-        
+
         // Блокируем взаимодействие с canvas
         if (this.canvas) {
             this.canvas.style.pointerEvents = 'none';
         }
-        
+
         // Блокируем кнопки
         //this.disableButtons(true);
     }
@@ -765,19 +765,19 @@ App.hideLoading = function () {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) {
         overlay.classList.add('hidden');
-        
+
         // Разблокируем взаимодействие с canvas
         if (this.canvas) {
             this.canvas.style.pointerEvents = 'auto';
         }
-        
+
         // Разблокируем кнопки
         this.disableButtons(false);
-        
+
         // Сбрасываем текст на значение по умолчанию
         const mainText = overlay.querySelector('p:first-of-type');
         const subText = overlay.querySelector('p.text-sm');
-        
+
         if (mainText) mainText.textContent = 'Загрузка теста...';
         if (subText) subText.textContent = 'Пожалуйста, подождите';
     }
@@ -818,28 +818,33 @@ App.disableButtons = function (disable) {
 // Показать ошибку
 App.showError = function (message) {
     console.log('showError вызван с сообщением:', message);
-    
+
     // Показываем ошибку в панели результатов
     const errorElement = document.getElementById('error');
     if (errorElement) {
         errorElement.textContent = message;
         errorElement.classList.remove('hidden');
-        
+
         // Убеждаемся, что панель результатов видима
         const resultsPanel = document.querySelector('.results-panel');
         if (resultsPanel) {
             resultsPanel.classList.remove('hidden');
         }
-        
-        // Автоматически скрываем ошибку через 5 секунд
-        setTimeout(() => {
-            errorElement.classList.add('hidden');
+
+        // Очищаем предыдущий таймер, если он был
+        if (this.errorTimeout) {
+            clearTimeout(this.errorTimeout);
+        }
+
+        // Устанавливаем новый таймер для скрытия ошибки
+        this.errorTimeout = setTimeout(() => {
+            // Проверяем, что элемент все еще существует и содержит то же сообщение
+            if (errorElement && errorElement.textContent === message) {
+                errorElement.classList.add('hidden');
+                console.log('Ошибка скрыта по таймеру');
+            }
+            this.errorTimeout = null;
         }, 5000);
-    } else {
-        console.error('Элемент error не найден');
-        
-        // Создаем временное уведомление, если элемент не найден
-        //this.showNotification(message, 'error');
     }
 };
 
