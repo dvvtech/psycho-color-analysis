@@ -14,6 +14,11 @@ App.initColoringPage = function () {
     this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d');
 
+    // Проверяем наличие overlay для загрузки
+    if (!document.getElementById('loadingOverlay')) {
+        console.warn('loadingOverlay не найден');
+    }
+
     // Скрываем панель результатов при загрузке страницы
     const resultsPanel = document.querySelector('.results-panel');
     if (resultsPanel) {
@@ -287,6 +292,9 @@ App.loadSelectedImage = function () {
 
 // Загрузка изображения из файла
 App.loadImageFromFile = function (image) {
+    // Показываем индикатор загрузки
+    this.showImageLoading();
+    
     const img = new Image();
     img.crossOrigin = "anonymous";
 
@@ -312,6 +320,9 @@ App.loadImageFromFile = function (image) {
         // Обновляем отображение угла
         const rotationAngle = document.getElementById('rotationAngle');
         if (rotationAngle) rotationAngle.textContent = '0°';
+        
+        // Скрываем индикатор загрузки
+        this.hideImageLoading();
     };
 
     img.onerror = () => {
@@ -321,6 +332,12 @@ App.loadImageFromFile = function (image) {
         this.state.undoStack = [];
         this.state.redoStack = [];
         this.updateUndoRedoButtons();
+        
+        // Скрываем индикатор загрузки даже при ошибке
+        this.hideImageLoading();
+        
+        // Показываем сообщение об ошибке
+        this.showError('Не удалось загрузить изображение');
     };
 
     img.src = image.filename;
@@ -362,6 +379,9 @@ App.drawPlaceholderImage = function () {
     this.ctx.font = '20px Arial';
     this.ctx.fillStyle = '#6b7280';
     this.ctx.fillText('Вернитесь на страницу настроек', this.canvas.width / 2, this.canvas.height / 2 + 30);
+    
+    // Скрываем индикатор загрузки, если он вдруг еще висит
+    this.hideImageLoading();
 };
 
 // Сохранение состояния
@@ -1273,4 +1293,26 @@ App.centerImageWithRotation = function () {
     this.saveState();
     
     console.log('Изображение отцентрировано, масштаб: 100%, поворот: 0°');
+};
+
+// Показать индикатор загрузки
+App.showImageLoading = function () {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        // Блокируем взаимодействие с canvas
+        this.canvas.style.pointerEvents = 'none';
+    }
+    console.log('Показан индикатор загрузки');
+};
+
+// Скрыть индикатор загрузки
+App.hideImageLoading = function () {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        // Разблокируем взаимодействие с canvas
+        this.canvas.style.pointerEvents = 'auto';
+    }
+    console.log('Скрыт индикатор загрузки');
 };

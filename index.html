@@ -385,6 +385,41 @@
                 font-size: 0.875rem;
             }
         }
+
+        /* Стили для индикатора загрузки */
+        #loadingOverlay {
+            transition: opacity 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        #loadingOverlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Анимация спиннера */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Контейнер для canvas должен быть относительным для позиционирования overlay */
+        .canvas-container {
+            position: relative;
+        }
     </style>
 </head>
 
