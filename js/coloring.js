@@ -738,8 +738,21 @@ App.showLoading = function () {
     } else {
         console.error('Элемент loading не найден');
     }
-    //const loading = document.getElementById('loading');
-    //if (loading) loading.style.display = 'block';
+    
+    // Также показываем overlay для canvas, чтобы заблокировать взаимодействие
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.classList.remove('hidden');
+        // Меняем текст для индикации анализа, а не загрузки изображения
+        const overlayText = loadingOverlay.querySelector('p:first-of-type');
+        if (overlayText) {
+            overlayText.textContent = 'Анализ данных...';
+        }
+        const overlaySubtext = loadingOverlay.querySelector('p.text-sm');
+        if (overlaySubtext) {
+            overlaySubtext.textContent = 'Пожалуйста, подождите';
+        }
+    }
 };
 
 // Скрыть загрузку
@@ -750,8 +763,21 @@ App.hideLoading = function () {
         // Разблокируем кнопки
         this.disableButtons(false);
     }
-    //const loading = document.getElementById('loading');
-    //if (loading) loading.style.display = 'none';
+    
+    // Скрываем overlay
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.classList.add('hidden');
+        // Восстанавливаем текст для загрузки изображений
+        const overlayText = loadingOverlay.querySelector('p:first-of-type');
+        if (overlayText) {
+            overlayText.textContent = 'Загрузка теста...';
+        }
+        const overlaySubtext = loadingOverlay.querySelector('p.text-sm');
+        if (overlaySubtext) {
+            overlaySubtext.textContent = 'Пожалуйста, подождите';
+        }
+    }
 };
 
 // Блокировка/разблокировка кнопок во время загрузки
