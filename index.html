@@ -10,6 +10,95 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+
+        /* Убираем вертикальный скролл */
+        html,
+        body {
+            overflow: hidden;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .glass-effect {
+            max-height: 95vh;
+            overflow: hidden;
+            margin: 1rem;
+        }
+
+        .page-container {
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+            /* Для Firefox */
+            -ms-overflow-style: none;
+            /* Для IE и Edge */
+        }
+
+        .page-container::-webkit-scrollbar {
+            display: none;
+            /* Для Chrome, Safari и Opera */
+        }
+
+        /* Для страницы settings */
+        #settings {
+            max-height: 90vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        #settings::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Для страницы coloring */
+        #coloring {
+            max-height: 90vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        #coloring::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Корректировка отступов для контейнера с тестами */
+        #image-selector {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* Скрываем скролл для контейнера с тестами, но оставляем функциональность */
+        #image-selector::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #image-selector::-webkit-scrollbar-thumb {
+            background-color: #cbd5e0;
+            border-radius: 4px;
+        }
+
+        #image-selector::-webkit-scrollbar-track {
+            background-color: #f1f5f9;
+        }
+
+        /* Для мобильных устройств */
+        @media (max-width: 640px) {
+            .glass-effect {
+                margin: 0.5rem;
+                max-height: 98vh;
+            }
+
+            #settings,
+            #coloring {
+                max-height: 95vh;
+            }
+        }
+
+        /****************************************************/
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -266,6 +355,35 @@
 
         #centerBtn:active i {
             animation: centerPulse 0.3s ease;
+        }
+
+        /***************************/
+
+        /* Уменьшаем отступы на мобильных устройствах */
+        @media (max-width: 1024px) {
+            .glass-effect {
+                margin: 0.5rem;
+            }
+
+            #settings .max-w-2xl,
+            #coloring .flex-1 {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Для очень маленьких экранов */
+        @media (max-width: 640px) {
+            .glass-effect {
+                margin: 0.25rem;
+            }
+
+            #settings .text-center h1 {
+                font-size: 1.25rem;
+            }
+
+            #settings .text-center p {
+                font-size: 0.875rem;
+            }
         }
     </style>
 </head>
