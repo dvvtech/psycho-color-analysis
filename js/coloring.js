@@ -731,13 +731,58 @@ App.displayResults = function (result) {
 // Показать загрузку
 App.showLoading = function () {
     const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'block';
+    if (loading) {
+        loading.classList.remove('hidden');
+        // Блокируем взаимодействие с кнопками (опционально)
+        this.disableButtons(true);
+    } else {
+        console.error('Элемент loading не найден');
+    }
+    //const loading = document.getElementById('loading');
+    //if (loading) loading.style.display = 'block';
 };
 
 // Скрыть загрузку
 App.hideLoading = function () {
     const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'none';
+    if (loading) {
+        loading.classList.add('hidden');
+        // Разблокируем кнопки
+        this.disableButtons(false);
+    }
+    //const loading = document.getElementById('loading');
+    //if (loading) loading.style.display = 'none';
+};
+
+// Блокировка/разблокировка кнопок во время загрузки
+App.disableButtons = function (disable) {
+    const buttons = [
+        'calculateBtn',
+        'clearBtn',
+        'homeBtn',
+        'rotateLeft',
+        'rotateRight',
+        'zoomIn',
+        'zoomOut',
+        'undoBtn',
+        'redoBtn',
+        'handBtn',
+        'centerBtn',
+        'sendEmailBtn'
+    ];
+
+    buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            if (disable) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+    });
 };
 
 // Показать ошибку
@@ -1000,7 +1045,7 @@ App.clearColoring = async function () {
 
     // Подтверждение действия через модальное окно
     const confirmed = await this.showClearConfirmModal();
-    
+
     // Подтверждение действия
     if (confirmed) {
 
@@ -1391,19 +1436,19 @@ App.sendResultsToEmail = async function (email) {
     console.log('Отправка результатов на email:', email);
 
     // Показываем индикатор отправки
-    console.log('Пытаемся показать индикатор отправки');    
+    console.log('Пытаемся показать индикатор отправки');
     this.hideEmailError();
     this.hideEmailSuccess();
 
     this.showEmailSending();
 
     try {
-        
+
         // Получаем данные для отправки
         console.log('Получение повернутого изображения...');
         const rotatedImageData = await this.getRotatedImageData();
         console.log('Изображение получено, размер:', rotatedImageData.size, 'байт');
-        
+
         const stats = this.state.colorUsage;
         const results = {
             mainCharacteristic: document.getElementById('mainCharacteristic')?.textContent,
@@ -1432,8 +1477,8 @@ App.sendResultsToEmail = async function (email) {
 
         // Отправляем запрос к сервису
         const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send2', {
-            method: 'POST',                        
-            body: formData            
+            method: 'POST',
+            body: formData
         });
 
         console.log('Ответ получен, статус:', response.status);
@@ -1447,7 +1492,7 @@ App.sendResultsToEmail = async function (email) {
         console.log('Результаты отправлены:', result);
 
     } catch (error) {
-        console.error('Ошибка при отправке на почту:', error);        
+        console.error('Ошибка при отправке на почту:', error);
         this.showEmailError('Ошибка при отправке. Пожалуйста, попробуйте позже.');
     } finally {
         this.hideEmailSending();
@@ -1459,7 +1504,7 @@ App.getRotatedImageData = function () {
     return new Promise((resolve) => {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        
+
         // Устанавливаем размеры с учетом поворота
         if (this.state.rotation === 90 || this.state.rotation === 270) {
             tempCanvas.width = this.canvas.height;
@@ -1468,16 +1513,16 @@ App.getRotatedImageData = function () {
             tempCanvas.width = this.canvas.width;
             tempCanvas.height = this.canvas.height;
         }
-        
+
         tempCtx.fillStyle = '#ffffff';
         tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-        
+
         tempCtx.save();
         tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
         tempCtx.rotate(this.state.rotation * Math.PI / 180);
         tempCtx.drawImage(this.canvas, -this.canvas.width / 2, -this.canvas.height / 2);
         tempCtx.restore();
-        
+
         tempCanvas.toBlob(resolve, 'image/png', 1.0);
     });
 };
@@ -1521,19 +1566,19 @@ App.hideEmailForm = function () {
 };
 
 // Показать индикатор отправки
-App.showEmailSending = function () {    
+App.showEmailSending = function () {
     const sending = document.getElementById('emailSending');
-    if (sending) {        
-        sending.classList.remove('hidden');        
+    if (sending) {
+        sending.classList.remove('hidden');
     } else {
-        console.error('Элемент emailSending НЕ НАЙДЕН в DOM');        
+        console.error('Элемент emailSending НЕ НАЙДЕН в DOM');
     }
 };
 
 // Скрыть индикатор отправки
-App.hideEmailSending = function () {    
+App.hideEmailSending = function () {
     const sending = document.getElementById('emailSending');
-    if (sending) {        
+    if (sending) {
         sending.classList.add('hidden');
     } else {
         console.error('Элемент emailSending НЕ НАЙДЕН в DOM');
@@ -1547,7 +1592,7 @@ App.showEmailError = function (message) {
     if (error) {
         error.textContent = message;
         error.classList.remove('hidden');
-        
+
         // Автоматически скрываем ошибку через 5 секунд
         setTimeout(() => {
             error.classList.add('hidden');
@@ -1595,58 +1640,58 @@ App.hideEmailSuccess = function () {
 // Метод, который показывает модальное окно и возвращает Promise
 App.showClearConfirmModal = function () {
     console.log('Показ модального окна подтверждения');
-    
+
     return new Promise((resolve) => {
         const modal = document.getElementById('clearConfirmModal');
         if (!modal) {
             resolve(false);
             return;
         }
-        
+
         // Показываем модальное окно
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-        
+
         // Функции для обработки выбора
         const onConfirm = () => {
             cleanup();
             resolve(true);
         };
-        
+
         const onCancel = () => {
             cleanup();
             resolve(false);
         };
-        
+
         // Очистка обработчиков
         const cleanup = () => {
             modal.classList.add('hidden');
             document.body.style.overflow = '';
-            
+
             confirmBtn.removeEventListener('click', onConfirm);
             cancelBtn.removeEventListener('click', onCancel);
             modal.removeEventListener('click', onOutsideClick);
             document.removeEventListener('keydown', onEscape);
         };
-        
+
         // Обработчик клика вне окна
         const onOutsideClick = (e) => {
             if (e.target === modal) {
                 onCancel();
             }
         };
-        
+
         // Обработчик Escape
         const onEscape = (e) => {
             if (e.key === 'Escape') {
                 onCancel();
             }
         };
-        
+
         // Получаем кнопки
         const confirmBtn = document.getElementById('confirmClearBtn');
         const cancelBtn = document.getElementById('cancelClearBtn');
-        
+
         // Назначаем обработчики
         confirmBtn.addEventListener('click', onConfirm);
         cancelBtn.addEventListener('click', onCancel);
