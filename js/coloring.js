@@ -1629,7 +1629,7 @@ App.sendResultsToEmail = async function (email) {
         console.log('Отправка запроса к серверу...');
 
         // Отправляем запрос к сервису
-        const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send2', {
+        const response = await fetch('https://api.cloud-platform.pro/email/mpptests/send', {
             method: 'POST',
             body: formData
         });
